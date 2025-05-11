@@ -1,9 +1,10 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './google.strategy';
+import { JwtAuthGuard } from './jwt-auth.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -18,9 +19,22 @@ export class AuthController {
 		// Inicia el flujo de autenticación Google
 	}
 
-	@Get('google/callback')
-	@UseGuards(AuthGuard('google'))
-	async googleLoginCallback(
+	@Get('me')
+	@UseGuards(JwtAuthGuard)
+	async getCurrentUser(@Req() req: { user: any }) {
+		return req.user;
+	}
+
+  @Post('logout')
+  @UseGuards(JwtAuthGuard)
+  async logout(@Res() res: Response) {
+    res.clearCookie('access_token');
+    return res.json({ message: 'Logged out successfully' });
+  }
+
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleLoginCallback(
 		@Req() req: { user: GoogleUser },
 		@Res() res: Response
 	) {
