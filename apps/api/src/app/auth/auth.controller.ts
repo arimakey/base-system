@@ -28,7 +28,7 @@ export class AuthController {
 			const token = await this.authService.login(req.user);
 			const frontendUrl =
 				this.config.get('FRONTEND_URL') ||
-				this.config.get('API_URL').replace('/api', '');
+				this.config.get('API_URL');
 			res.redirect(`${frontendUrl}/login?token=${token.access_token}`);
 		} catch (error) {
 			const frontendUrl =
