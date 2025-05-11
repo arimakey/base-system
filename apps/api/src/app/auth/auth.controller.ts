@@ -27,12 +27,12 @@ export class AuthController {
 		try {
 			const token = await this.authService.login(req.user);
 			const frontendUrl =
-				this.config.get('FRONTEND_URL') ||
-				this.config.get('API_URL');
+				this.config.get('FRONTEND_URL') || this.config.get('API_URL');
+			console.log('Google auth success', { user: req.user, token });
 			res.redirect(`${frontendUrl}/login?token=${token.access_token}`);
 		} catch (error) {
-			const frontendUrl =
-				this.config.get('FRONTEND_URL') || 'http://localhost:4200'; // ajusta esto
+			const frontendUrl = this.config.get('FRONTEND_URL');
+			console.error('Google auth failed', error);
 			res.redirect(`${frontendUrl}/login?error=auth_failed`);
 		}
 	}

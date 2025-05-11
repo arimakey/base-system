@@ -7,12 +7,27 @@ export async function loader({ request }: { request: Request }) {
   const url = new URL(request.url);
   const urlError = url.searchParams.get("error");
 
+  const urlToken = url.searchParams.get("token");
+
   if (urlError) {
     session.set("error", "Authentication failed. Please try again.");
+  } else if (urlToken) {
+    session.set("token", urlToken);
+    session.set("user", JSON.parse(atob(urlToken.split('.')[1])));
   }
 
   const error = session.get("error") || null;
   const token = session.get("token") || null;
+
+  if (token) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        "Location": "/",
+        "Set-Cookie": await commitSession(session),
+      },
+    });
+  }
 
   return json(
     { error, token },
