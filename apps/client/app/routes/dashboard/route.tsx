@@ -1,5 +1,6 @@
 import { json, type LoaderFunctionArgs } from '@remix-run/node';
 import { useLoaderData, Form } from '@remix-run/react';
+import { getSessionFromRequest } from '../../session.server';
 
 type UserData = {
   id: string;
@@ -9,7 +10,8 @@ type UserData = {
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const token = localStorage.getItem('authToken');
+  const session = await getSessionFromRequest(request);
+  const token = session.get('token');
 
   if (!token) {
     return json({ user: null });
@@ -31,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Dashboard() {
   const { user } = useLoaderData<{ user: UserData | null }>();
-
+  console.log('User data:', user);
   if (!user) {
     return (
       <div>
@@ -57,13 +59,10 @@ export default function Dashboard() {
           try {
             const response = await fetch('http://localhost:3000/api/auth/logout', {
               method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-              }
+              credentials: 'include' // Send cookies automatically
             });
 
             if (response.ok) {
-              localStorage.removeItem('authToken');
               window.location.href = '/';
             }
           } catch (error) {
