@@ -11,11 +11,13 @@ interface User {
 interface UserState {
   user: User | null;
   isAuthenticated: boolean;
+  token: string | null;
 }
 
 const initialState: UserState = {
   user: null,
-  isAuthenticated: false
+  isAuthenticated: false,
+  token: null
 };
 
 export const userStore = new Store(initialState);
@@ -25,6 +27,13 @@ export function setUser(user: User | null) {
     ...state,
     user,
     isAuthenticated: !!user
+  }));
+}
+
+export function setToken(token: string | null) {
+  userStore.setState((state) => ({
+    ...state,
+    token,
   }));
 }
 
