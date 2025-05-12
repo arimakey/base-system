@@ -4,8 +4,13 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from '@remix-run/react';
-import type { MetaFunction, LinksFunction } from '@remix-run/node';
+import { json } from '@remix-run/node';
+import type { MetaFunction, LinksFunction, LoaderFunctionArgs } from '@remix-run/node';
+import { getSessionFromRequest } from './session.server';
+import { setUser } from './store/user.store';
+import { useEffect } from 'react';
 
 export const meta: MetaFunction = () => [
   {
@@ -26,6 +31,28 @@ export const links: LinksFunction = () => [
   },
 ];
 
+export async function loader({ request }: LoaderFunctionArgs) {
+  const session = await getSessionFromRequest(request);
+  const token = session.get('token');
+
+  if (!token) {
+    return json({ user: null });
+  }
+
+  const apiUrl = process.env.API_URL || 'http://localhost:3000';
+  const response = await fetch(`${apiUrl}/auth/me`, {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+
+  if (!response.ok) {
+    return json({ user: null });
+  }
+
+  return json({ user: await response.json() });
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -45,5 +72,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
+  const { user } = useLoaderData<{ user: any }>();
+
+  useEffect(() => {
+    setUser(user);
+  }, [user]);
+
   return <Outlet />;
 }

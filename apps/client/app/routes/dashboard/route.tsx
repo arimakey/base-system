@@ -1,39 +1,13 @@
-import { json, type LoaderFunctionArgs } from '@remix-run/node';
-import { useLoaderData, Form } from '@remix-run/react';
-import { getSessionFromRequest } from '../../session.server';
-
-type UserData = {
-  id: string;
-  email: string;
-  name: string;
-  picture?: string;
-};
+import { type LoaderFunctionArgs } from '@remix-run/node';
+import { Form } from '@remix-run/react';
+import { useUser } from '../../store/user.store';
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const session = await getSessionFromRequest(request);
-  const token = session.get('token');
-
-  if (!token) {
-    return json({ user: null });
-  }
-
-  const apiUrl = process.env.API_URL || 'http://localhost:3000';
-  const response = await fetch(`${apiUrl}/auth/me`, {
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  });
-
-  if (!response.ok) {
-    return json({ user: null });
-  }
-
-  return json({ user: await response.json() });
+  return null; // No data needed - authentication is handled in root.tsx
 }
 
 export default function Dashboard() {
-  const { user } = useLoaderData<{ user: UserData | null }>();
-  console.log('User data:', user);
+  const { user, isAuthenticated } = useUser() as { user: any; isAuthenticated: boolean };
   if (!user) {
     return (
       <div>
