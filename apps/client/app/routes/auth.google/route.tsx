@@ -21,7 +21,21 @@ export async function loader({ request }: { request: Request }) {
   if (token) {
     const session = await getSessionFromRequest(request);
     session.set("token", token);
-    return redirect("/", {
+
+    // Fetch user data immediately with the token
+    const apiUrl = process.env.API_URL || 'http://localhost:3000';
+    const response = await fetch(`${apiUrl}/auth/me`, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response.ok) {
+      const userData = await response.json();
+      session.set("user", userData);
+    }
+
+    return redirect("/dashboard", {
       headers: {
         "Set-Cookie": await commitSession(session),
       },

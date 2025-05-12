@@ -10,13 +10,11 @@ interface User {
 
 interface UserState {
   user: User | null;
-  isAuthenticated: boolean;
   token: string | null;
 }
 
 const initialState: UserState = {
   user: null,
-  isAuthenticated: false,
   token: null
 };
 
@@ -26,7 +24,6 @@ export function setUser(user: User | null) {
   userStore.setState((state) => ({
     ...state,
     user,
-    isAuthenticated: !!user
   }));
 }
 
@@ -42,5 +39,9 @@ export function clearUser() {
 }
 
 export function useUser(): { user: User | null; isAuthenticated: boolean } {
-  return useStore(userStore);
+  const state = useStore(userStore);
+  return {
+    user: state.user,
+    isAuthenticated: !!state.user, // Derivado de `user`
+  };
 }
