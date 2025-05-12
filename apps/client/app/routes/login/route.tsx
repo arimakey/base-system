@@ -5,8 +5,10 @@ import { setUser, setToken } from '../../store/user.store';
 export default function Login() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
   const authError = searchParams.get('error');
   const token = searchParams.get('token');
+
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
