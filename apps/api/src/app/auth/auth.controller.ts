@@ -39,16 +39,14 @@ export class AuthController {
 		@Res() res: Response
 	) {
 		try {
-			const token = await this.authService.login(req.user);
-      console.log('token en backend', token);
-			const frontendUrl =
-				this.config.get('FRONTEND_URL');
-			console.log('Google auth success', { user: req.user, token });
-			res.redirect(`${frontendUrl}/login?token=${token.access_token}`);
+			const user = await this.authService.findOrCreateUserFromGoogle(req.user);
+			const backendToken = await this.authService.generateBackendJWT(user);
+			const frontendUrl = this.config.get('FRONTEND_URL');
+			res.redirect(`${frontendUrl}/login/callback?token=${backendToken.access_token}`);
 		} catch (error) {
 			const frontendUrl = this.config.get('FRONTEND_URL');
 			console.error('Google auth failed', error);
-			res.redirect(`${frontendUrl}/login?error=auth_failed`);
+			res.redirect(`${frontendUrl}/login/callback?error=auth_failed`);
 		}
 	}
 }

@@ -10,9 +10,19 @@ export class AuthService {
 		private configService: ConfigService
 	) {}
 
-	async login(user: GoogleUser) {
+	async findOrCreateUserFromGoogle(googleUser: GoogleUser) {
+		// Implementar lógica de base de datos aquí
+		// Ejemplo temporal: devolver usuario de Google directamente
+		return {
+			id: googleUser.googleId,
+			email: googleUser.email,
+			name: googleUser.name
+		};
+	}
+
+	async generateBackendJWT(user: any) {
 		const payload = {
-			sub: user.googleId,
+			sub: user.id,
 			email: user.email,
 			name: user.name,
 			iss: 'your-app-name',
@@ -23,13 +33,6 @@ export class AuthService {
 			expiresIn: '1h',
 		});
 
-		return {
-			access_token,
-			user: {
-				id: user.googleId,
-				email: user.email,
-				name: user.name,
-			},
-		};
+		return { access_token };
 	}
 }

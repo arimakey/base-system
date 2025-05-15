@@ -8,6 +8,7 @@ export async function loader({ request }: { request: Request }) {
   const token = url.searchParams.get("token");
   const error = url.searchParams.get("error");
 
+
   if (error) {
     const session = await getSessionFromRequest(request);
     session.flash("error", "Google authentication failed");
@@ -20,11 +21,10 @@ export async function loader({ request }: { request: Request }) {
 
   if (token) {
     const session = await getSessionFromRequest(request);
-    session.set("token", token);
 
-    // Fetch user data immediately with the token
     const apiUrl = process.env.API_URL || 'http://localhost:3000';
-    const response = await fetch(`${apiUrl}/auth/me`, {
+
+    const response = await fetch(`${apiUrl}/api/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -33,6 +33,8 @@ export async function loader({ request }: { request: Request }) {
     if (response.ok) {
       const userData = await response.json();
       session.set("user", userData);
+    } else {
+      console.error("Failed to fetch user data:", response.status, response.statusText);
     }
 
     return redirect("/dashboard", {
@@ -42,7 +44,7 @@ export async function loader({ request }: { request: Request }) {
     });
   }
 
-  return redirect("/api/auth/google");
+  return redirect("/");
 }
 
 export default function GoogleAuth() {
@@ -52,6 +54,8 @@ export default function GoogleAuth() {
   useEffect(() => {
     if (error) {
       console.error("Google auth error:", error);
+    } else {
+      console.log("GoogleAuth component mounted without error");
     }
   }, [error]);
 

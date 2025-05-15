@@ -1,20 +1,4 @@
-import { useEffect } from 'react';
-import { useNavigate } from '@remix-run/react';
-
 export default function Index() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Extraer token de la URL si existe
-    const urlParams = new URLSearchParams(window.location.search);
-    const token = urlParams.get('token');
-
-    if (token) {
-      localStorage.setItem('authToken', token);
-      navigate('/dashboard');
-    }
-  }, []);
-
   return (
     <div style={{
       display: 'flex',
