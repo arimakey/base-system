@@ -16,8 +16,8 @@ export class AuthController {
 	@Get('google')
 	@UseGuards(AuthGuard('google'))
 	googleLogin() {
-		// Inicia el flujo de autenticación Google
-	}
+    return { message: 'Google authentication initiated' };
+  }
 
 	@Get('me')
 	@UseGuards(JwtAuthGuard)
@@ -40,6 +40,7 @@ export class AuthController {
 	) {
 		try {
 			const token = await this.authService.login(req.user);
+      console.log('token en backend', token);
 			const frontendUrl =
 				this.config.get('FRONTEND_URL');
 			console.log('Google auth success', { user: req.user, token });

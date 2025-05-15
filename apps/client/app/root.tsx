@@ -35,11 +35,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const session = await getSessionFromRequest(request);
   const token = session.get('token');
 
+  console.log('token', token);
+
   if (!token) {
     return json({ user: null });
   }
 
   const apiUrl = process.env.API_URL || 'http://localhost:3000';
+
   const response = await fetch(`${apiUrl}/auth/me`, {
     headers: {
       'Authorization': `Bearer ${token}`

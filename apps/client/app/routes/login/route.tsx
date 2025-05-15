@@ -9,6 +9,9 @@ export default function Login() {
   const authError = searchParams.get('error');
   const token = searchParams.get('token');
 
+  console.log('token', token);
+  console.log('authError', authError);
+
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 

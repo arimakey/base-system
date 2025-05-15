@@ -11,7 +11,6 @@ export class AuthService {
 	) {}
 
 	async login(user: GoogleUser) {
-		// Solo claims personalizados, sin iat/exp
 		const payload = {
 			sub: user.googleId,
 			email: user.email,
