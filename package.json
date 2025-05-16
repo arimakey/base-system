@@ -8,7 +8,9 @@
 		"lint": "nx run-many --target=lint",
 		"dev": "nx run-many --target=serve --projects=api,client",
 		"generate:api": "nx generate @nx/nest:application",
-		"generate:client": "nx generate @nx/react:application"
+		"generate:client": "nx generate @nx/react:application",
+		"prettier:check": "prettier --check .",
+		"pretty": "prettier --write ."
 	},
 	"private": true,
 	"dependencies": {

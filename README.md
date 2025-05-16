@@ -4,20 +4,23 @@
 
 ## Features
 
-- **Backend**: NestJS API with TypeORM setup
-- **Frontend**: React with Vite
-- **Monorepo**: Managed with Nx for optimal build times
-- **Testing**: Jest configured for both backend and frontend
-- **Linting**: ESLint and Prettier pre-configured
+-   **Backend**: NestJS API with TypeORM setup
+-   **Frontend**: React with Vite
+-   **Monorepo**: Managed with Nx for optimal build times
+-   **Testing**: Jest configured for both backend and frontend
+-   **Linting**: ESLint and Prettier pre-configured
 
 ## Getting Started
 
 1. Clone this repository
 2. Install dependencies:
+
 ```sh
 pnpm install
 ```
+
 3. Start development servers:
+
 ```sh
 pnpm dev
 ```
@@ -36,6 +39,7 @@ monorepo-template/
 ## Backend Development
 
 To generate a new NestJS module:
+
 ```sh
 pnpm generate:api
 ```
@@ -43,6 +47,7 @@ pnpm generate:api
 ## Frontend Development
 
 To generate a new React component:
+
 ```sh
 pnpm generate:client
 ```
@@ -50,6 +55,7 @@ pnpm generate:client
 ## Deployment
 
 Build production bundles:
+
 ```sh
 pnpm build
 ```

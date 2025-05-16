@@ -16,7 +16,7 @@ import { RefreshToken } from './auth/refresh-token.entity';
 			username: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
-      entities: [RefreshToken],
+			entities: [RefreshToken],
 			synchronize: true,
 			logging: true,
 		}),

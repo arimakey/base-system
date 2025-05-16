@@ -1,5 +1,3 @@
 export default function route() {
-  return (
-    <div>route</div>
-  )
+	return <div>route</div>;
 }
