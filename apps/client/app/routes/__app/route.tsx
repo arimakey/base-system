@@ -6,14 +6,17 @@ import { getSessionFromRequest } from '../../session.server';
 export async function loader({ request }: LoaderFunctionArgs) {
 	const session = await getSessionFromRequest(request);
 	const token = session.get('token');
+	const user = session.get('user');
 
 	if (!token) {
-		console.log('No token found, redirecting to /404');
 		throw redirect('/');
 	}
 
+	if (user) {
+		return null;
+	}
+
 	const apiUrl = process.env.API_URL || 'http://localhost:3000';
-	console.log('API URL:', apiUrl);
 
 	const response = await fetch(`${apiUrl}/auth/me`, {
 		headers: {

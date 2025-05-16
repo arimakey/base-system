@@ -8,7 +8,6 @@ export async function loader({ request }: { request: Request }) {
   const token = url.searchParams.get("token");
   const error = url.searchParams.get("error");
 
-
   if (error) {
     const session = await getSessionFromRequest(request);
     session.flash("error", "Google authentication failed");
@@ -23,8 +22,7 @@ export async function loader({ request }: { request: Request }) {
     const session = await getSessionFromRequest(request);
 
     const apiUrl = process.env.API_URL || 'http://localhost:3000';
-
-    const response = await fetch(`${apiUrl}/api/auth/me`, {
+    const response = await fetch(`${apiUrl}/auth/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -33,6 +31,7 @@ export async function loader({ request }: { request: Request }) {
     if (response.ok) {
       const userData = await response.json();
       session.set("user", userData);
+      session.set("token", token);
     } else {
       console.error("Failed to fetch user data:", response.status, response.statusText);
     }
