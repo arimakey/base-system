@@ -5,7 +5,7 @@ import { routes } from './routes';
 export function App() {
 	return (
 		<>
-			<Toaster />
+			<Toaster richColors />
 			<Routes>
 				{routes.map((route) => (
 					<Route

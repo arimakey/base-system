@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Task, CreateTaskDto, UpdateTaskDto } from '../types/tasks.interface';
 import { taskService } from '../services/task.service';
+import { toast } from 'sonner';
 
 interface TaskState {
 	tasks: Task[];
@@ -47,17 +48,28 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 			set({ loading: false });
 		}
 	},
-
 	createTask: async (data) => {
 		set({ loading: true, error: null });
-		try {
-			const newTask = await taskService.create(data);
-			set({ tasks: [...get().tasks, newTask] });
-		} catch (err: any) {
-			set({ error: err.message });
-		} finally {
-			set({ loading: false });
-		}
+
+		const promise = taskService
+			.create(data)
+			.then((newTask) => {
+				set({ tasks: [...get().tasks, newTask] });
+				return newTask;
+			})
+			.catch((err: any) => {
+				set({ error: err.message });
+				throw err;
+			})
+			.finally(() => {
+				set({ loading: false });
+			});
+
+		toast.promise(promise, {
+			loading: 'Agregando tarea...',
+			success: (data) => `${data.title} ha sido agregada correctamente.`,
+			error: 'No se pudo agregar la tarea.',
+		});
 	},
 
 	updateTask: async (id, data) => {
