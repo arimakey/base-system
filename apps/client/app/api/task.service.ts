@@ -1,11 +1,17 @@
 import { CreateTaskDto, Task, UpdateTaskDto } from '../types/tasks.interface';
 import { useUserStore } from '../store/user.store';
-const API_URL = import.meta.env.VITE_API_URL;
 
-const authHeader = () => ({
-	Authorization: `Bearer ${useUserStore.getState().token}`,
-	'Content-Type': 'application/json',
-});
+// Usamos el proxy definido en el cliente (por ejemplo, en package.json: "proxy": "http://localhost:3000")
+// y por tanto apuntamos a la ruta relativa /api
+const API_URL = '/api';
+
+const authHeader = () => {
+	const token = useUserStore.getState().token;
+	return {
+		Authorization: `Bearer ${token}`,
+		'Content-Type': 'application/json',
+	};
+};
 
 export const fetchTasks = async (): Promise<Task[]> => {
 	const res = await fetch(`${API_URL}/tasks`, { headers: authHeader() });

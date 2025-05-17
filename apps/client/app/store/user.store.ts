@@ -1,19 +1,5 @@
 import { create } from 'zustand';
-
-interface User {
-	id: string;
-	email: string;
-	name: string;
-	picture?: string;
-}
-
-interface UserState {
-	user: User | null;
-	token: string | null;
-	setUser: (user: User | null) => void;
-	setToken: (token: string | null) => void;
-	clearUser: () => void;
-}
+import { User, UserState } from '../types/user.interface';
 
 const initialState: Pick<UserState, 'user' | 'token'> = {
 	user: null,
