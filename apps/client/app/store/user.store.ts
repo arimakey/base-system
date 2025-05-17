@@ -1,5 +1,4 @@
-import { Store } from '@tanstack/store';
-import { useStore } from '@tanstack/react-store';
+import { create } from 'zustand';
 
 interface User {
 	id: string;
@@ -11,37 +10,32 @@ interface User {
 interface UserState {
 	user: User | null;
 	token: string | null;
+	setUser: (user: User | null) => void;
+	setToken: (token: string | null) => void;
+	clearUser: () => void;
 }
 
-const initialState: UserState = {
+const initialState: Pick<UserState, 'user' | 'token'> = {
 	user: null,
 	token: null,
 };
 
-export const userStore = new Store(initialState);
-
-export function setUser(user: User | null) {
-	userStore.setState((state) => ({
-		...state,
-		user,
-	}));
-}
-
-export function setToken(token: string | null) {
-	userStore.setState((state) => ({
-		...state,
-		token,
-	}));
-}
-
-export function clearUser() {
-	userStore.setState(() => initialState);
-}
+export const useUserStore = create<UserState>((set) => ({
+	...initialState,
+	setUser: (user: User | null) => set(() => ({ user })),
+	setToken: (token: string | null) => set(() => ({ token })),
+	clearUser: () => set(() => ({ ...initialState })),
+}));
 
 export function useUser(): { user: User | null; isAuthenticated: boolean } {
-	const state = useStore(userStore);
+	const { user } = useUserStore((state: UserState) => ({ user: state.user }));
 	return {
-		user: state.user,
-		isAuthenticated: !!state.user, // Derivado de `user`
+		user,
+		isAuthenticated: !!user,
 	};
 }
+
+// Convenience selectors/actions if needed, though direct use of useUserStore is common
+export const setUser = (user: User | null) => useUserStore.getState().setUser(user);
+export const setToken = (token: string | null) => useUserStore.getState().setToken(token);
+export const clearUser = () => useUserStore.getState().clearUser();
