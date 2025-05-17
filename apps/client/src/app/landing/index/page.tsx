@@ -1,4 +1,4 @@
-export default function Index() {
+export default function LandingPage() {
 	return (
 		<div
 			style={{
@@ -8,7 +8,7 @@ export default function Index() {
 				height: '100vh',
 			}}
 		>
-			<a href="/auth/google">
+			<a href="/api/auth/google">
 				<button
 					style={{
 						padding: '12px 24px',

@@ -45,3 +45,5 @@ vite.config.*.timestamp*
 .env
 */.env
 apps/api/.env
+
+vitest.config.*.timestamp*

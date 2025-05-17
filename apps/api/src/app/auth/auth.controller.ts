@@ -110,11 +110,11 @@ export class AuthController {
 			console.log('Generated access token:', accessToken);
 
 			const frontendUrl = this.config.get('FRONTEND_URL');
-			res.redirect(`${frontendUrl}/login/callback?token=${accessToken}`);
+			res.redirect(`${frontendUrl}/auth/login/callback?token=${accessToken}`);
 		} catch (error) {
 			const frontendUrl = this.config.get('FRONTEND_URL');
 			console.error('Google auth failed', error);
-			res.redirect(`${frontendUrl}/login/callback?error=auth_failed`);
+			res.redirect(`${frontendUrl}/auth/login/callback?error=auth_failed`);
 		}
 	}
 }
