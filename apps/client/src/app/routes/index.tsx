@@ -5,7 +5,12 @@ import LandingPage from '../landing/index/page';
 import UserConfigPage from '../config/page';
 import TasksPage from '../tasks/page';
 
-export const routes = [
+interface RouteConfig {
+	path: string;
+	element: React.ReactNode;
+}
+
+export const routes: RouteConfig[] = [
 	{
 		path: '/',
 		element: <LandingPage />,
