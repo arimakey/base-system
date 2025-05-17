@@ -7,6 +7,7 @@ import * as crypto from 'crypto';
 import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './google.strategy';
 import { User } from '../types/user';
+import { Role } from './enums/role.enum';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
 			id: googleUser.googleId,
 			email: googleUser.email,
 			name: googleUser.name,
+			roles: [Role.USER], // Assign default role
 		};
 	}
 
@@ -33,6 +35,7 @@ export class AuthService {
 				sub: user.id,
 				email: user.email,
 				name: user.name,
+				roles: user.roles, // Include roles in JWT payload
 			},
 			{
 				secret: this.configService.get('JWT_SECRET'),
@@ -79,10 +82,13 @@ export class AuthService {
 		}
 
 		// En una aplicación real, aquí buscarías el usuario completo en la base de datos
-		const user = {
+		// En una aplicación real, aquí buscarías el usuario completo en la base de datos
+		// incluyendo sus roles. Por ahora, asignamos un rol por defecto.
+		const user: User = {
 			id: refreshToken.userId,
 			email: 'user@example.com', // Esto debería venir de la base de datos
 			name: 'User Name', // Esto debería venir de la base de datos
+			roles: [Role.USER], // Asignar rol por defecto para satisfacer el tipo
 		};
 
 		return user;

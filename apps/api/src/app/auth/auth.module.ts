@@ -11,6 +11,7 @@ import { JwtRefreshGuard } from './refresh.guard';
 import { RefreshToken } from './refresh-token.entity'; // Asegurarnos que la ruta sea correcta
 import { JwtStrategy } from './jwt.strategy';
 import { JwtRefreshStrategy } from './jwt-refresh.strategy';
+import { PermissionsGuard } from './guards/permissions.guard';
 
 @Module({
 	imports: [
@@ -36,6 +37,7 @@ import { JwtRefreshStrategy } from './jwt-refresh.strategy';
 		JwtRefreshStrategy,
 		JwtAuthGuard,
 		JwtRefreshGuard,
+		PermissionsGuard, // Add PermissionsGuard here
 	],
 	controllers: [AuthController],
 	exports: [JwtModule, AuthService],

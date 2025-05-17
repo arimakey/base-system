@@ -14,6 +14,8 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
 	}
 
 	async validate(payload: any) {
-		return { id: payload.sub, email: payload.email };
+		// Ensure roles are passed as an array, even if not present in older tokens (for graceful migration)
+		const roles = Array.isArray(payload.roles) ? payload.roles : [];
+		return { id: payload.sub, email: payload.email, name: payload.name, roles: roles };
 	}
 }
