@@ -1,109 +1,251 @@
-import { useState } from 'react'
-import { Task } from '../../types/tasks.interface'
+import React, { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 
-enum TaskStatus {
-  PENDING = 'PENDING',
-  IN_PROGRESS = 'IN_PROGRESS',
-  COMPLETED = 'COMPLETED',
-}
+import {
+	ColumnDef,
+	flexRender,
+	getCoreRowModel,
+	useReactTable,
+	getSortedRowModel,
+	SortingState,
+} from '@tanstack/react-table';
+
+import { useTaskStore } from '../../stores/task.store';
+import { CreateTaskDto, Task } from '../../types/tasks.interface';
 
 export default function TasksPage() {
-  const [tasks, setTasks] = useState<Task[]>([])
-  const [newTaskTitle, setNewTaskTitle] = useState('')
-  const [newTaskDescription, setNewTaskDescription] = useState('')
+	const {
+		tasks,
+		selectedTask,
+		selectTask,
+		fetchTasks,
+		createTask,
+		updateTask,
+		deleteTask,
+		loading,
+		error,
+	} = useTaskStore();
 
-  // Create task
-  const handleAddTask = () => {
-    if (!newTaskTitle.trim()) return
-    
-    const newTask: Task = {
-      id: crypto.randomUUID(),
-      title: newTaskTitle,
-      description: newTaskDescription,
-      status: TaskStatus.PENDING,
-      userId: 'temp-user-id',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    }
-    
-    setTasks([...tasks, newTask])
-    setNewTaskTitle('')
-    setNewTaskDescription('')
-  }
+	const [sorting, setSorting] = useState<SortingState>([]);
 
-  // Update task status
-  const handleUpdateStatus = (id: string, status: TaskStatus) => {
-    setTasks(tasks.map(task => 
-      task.id === id ? { ...task, status, updatedAt: new Date() } : task
-    ))
-  }
+	const {
+		register,
+		handleSubmit,
+		reset,
+		formState: { errors },
+	} = useForm<CreateTaskDto>({
+		defaultValues: { title: '', description: '' },
+	});
 
-  // Delete task
-  const handleDeleteTask = (id: string) => {
-    setTasks(tasks.filter(task => task.id !== id))
-  }
+	useEffect(() => {
+		fetchTasks();
+	}, [fetchTasks]);
 
-  return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Task Manager</h1>
-      
-      <div className="flex flex-col gap-2 mb-4">
-        <input
-          type="text"
-          value={newTaskTitle}
-          onChange={(e) => setNewTaskTitle(e.target.value)}
-          placeholder="Enter task title"
-          className="border p-2 rounded"
-        />
-        <textarea
-          value={newTaskDescription}
-          onChange={(e) => setNewTaskDescription(e.target.value)}
-          placeholder="Enter task description (optional)"
-          className="border p-2 rounded"
-          rows={3}
-        />
-        <button
-          onClick={handleAddTask}
-          className="bg-blue-500 text-white px-4 py-2 rounded w-fit"
-        >
-          Add Task
-        </button>
-      </div>
+	useEffect(() => {
+		if (selectedTask) {
+			reset({
+				title: selectedTask.title,
+				description: selectedTask.description,
+			});
+		} else {
+			reset({ title: '', description: '' });
+		}
+	}, [selectedTask, reset]);
 
-      <ul className="space-y-2">
-        {tasks.map(task => (
-          <li key={task.id} className="flex flex-col gap-2 border p-4 rounded">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold">{task.title}</h3>
-              <button
-                onClick={() => handleDeleteTask(task.id)}
-                className="bg-red-500 text-white px-2 py-1 rounded"
-              >
-                Delete
-              </button>
-            </div>
-            {task.description && (
-              <p className="text-gray-600">{task.description}</p>
-            )}
-            <div className="flex items-center gap-2">
-              <select
-                value={task.status}
-                onChange={(e) => handleUpdateStatus(task.id, e.target.value as TaskStatus)}
-                className="border rounded p-1"
-              >
-                {Object.values(TaskStatus).map(status => (
-                  <option key={status} value={status}>
-                    {status}
-                  </option>
-                ))}
-              </select>
-              <span className="text-sm text-gray-500">
-                Updated: {task.updatedAt.toLocaleDateString()}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+	const onSubmit = handleSubmit(async (values) => {
+		if (selectedTask) {
+			await updateTask(selectedTask.id, values);
+			selectTask(null);
+		} else {
+			await createTask(values);
+			reset({ title: '', description: '' });
+		}
+	});
+
+	const columns = React.useMemo<ColumnDef<Task>[]>(
+		() => [
+			{
+				accessorKey: 'title',
+				header: 'Title',
+				enableSorting: true,
+			},
+			{
+				accessorKey: 'description',
+				header: 'Description',
+				enableSorting: true,
+			},
+			{
+				id: 'actions',
+				header: 'Actions',
+				cell: ({ row }) => (
+					<div className="space-x-2">
+						<button
+							onClick={() => selectTask(row.original)}
+							className="px-2 py-1 rounded bg-blue-500 text-white"
+						>
+							Edit
+						</button>
+						<button
+							onClick={() => deleteTask(row.original.id)}
+							className="px-2 py-1 rounded bg-red-500 text-white"
+						>
+							Delete
+						</button>
+					</div>
+				),
+			},
+		],
+		[selectTask, deleteTask]
+	);
+
+	const table = useReactTable({
+		data: tasks,
+		columns,
+		state: { sorting },
+		onSortingChange: setSorting,
+		getCoreRowModel: getCoreRowModel(),
+		getSortedRowModel: getSortedRowModel(),
+	});
+
+	return (
+		<div className="p-4">
+			<h1 className="text-2xl font-bold mb-4">Task Manager</h1>
+
+			{error && (
+				<div className="p-3 mb-4 bg-red-100 border border-red-400 text-red-700 rounded">
+					Error: {error}
+				</div>
+			)}
+
+			<form onSubmit={onSubmit} className="mb-6 space-y-4">
+				<div>
+					<label htmlFor="title" className="block mb-1 font-medium">
+						Title
+					</label>
+					<input
+						id="title"
+						{...register('title', {
+							required: 'Title is required',
+						})}
+						className="w-full border rounded p-2"
+						aria-invalid={errors.title ? 'true' : 'false'}
+					/>
+					{errors.title && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.title.message}
+						</p>
+					)}
+				</div>
+				<div>
+					<label
+						htmlFor="description"
+						className="block mb-1 font-medium"
+					>
+						Description
+					</label>
+					<textarea
+						id="description"
+						{...register('description', {
+							required: 'Description is required',
+						})}
+						className="w-full border rounded p-2"
+						aria-invalid={errors.description ? 'true' : 'false'}
+					/>
+					{errors.description && (
+						<p className="text-red-500 text-sm mt-1">
+							{errors.description.message}
+						</p>
+					)}
+				</div>
+				<div className="flex items-center">
+					<button
+						type="submit"
+						disabled={loading}
+						className="px-4 py-2 rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+					>
+						{selectedTask ? 'Update Task' : 'Create Task'}
+					</button>
+					{selectedTask && (
+						<button
+							type="button"
+							onClick={() => selectTask(null)}
+							className="ml-2 px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+						>
+							Cancel
+						</button>
+					)}
+				</div>
+			</form>
+
+			{loading ? (
+				<div className="text-center p-4 text-gray-600">
+					Loading tasks...
+				</div>
+			) : tasks.length === 0 ? (
+				<div className="text-center p-4 border rounded bg-gray-50">
+					<p className="text-gray-600">
+						No tasks found. Create your first task above.
+					</p>
+				</div>
+			) : (
+				<div className="overflow-x-auto">
+					<table className="min-w-full border-collapse">
+						<thead>
+							{table.getHeaderGroups().map((headerGroup) => (
+								<tr
+									key={headerGroup.id}
+									className="border-b border-gray-300 bg-gray-100"
+								>
+									{headerGroup.headers.map((header) => (
+										<th
+											key={header.id}
+											className="px-4 py-2 text-left font-semibold"
+											onClick={header.column.getToggleSortingHandler()}
+											style={{
+												cursor: header.column.getCanSort()
+													? 'pointer'
+													: 'default',
+											}}
+										>
+											{flexRender(
+												header.column.columnDef.header,
+												header.getContext()
+											)}
+											{header.column.getCanSort() && (
+												<span className="ml-1">
+													{{
+														asc: ' 🔼',
+														desc: ' 🔽',
+													}[
+														header.column.getIsSorted() as string
+													] ?? ' ↕️'}
+												</span>
+											)}
+										</th>
+									))}
+								</tr>
+							))}
+						</thead>
+						<tbody>
+							{table.getRowModel().rows.map((row) => (
+								<tr
+									key={row.id}
+									className="border-b border-gray-200 hover:bg-gray-50"
+								>
+									{row.getVisibleCells().map((cell) => (
+										<td key={cell.id} className="px-4 py-2">
+											{flexRender(
+												cell.column.columnDef.cell,
+												cell.getContext()
+											)}
+										</td>
+									))}
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+			)}
+		</div>
+	);
 }

@@ -1,4 +1,4 @@
-import { setToken, setUser } from '../../../stores/user.store';
+import { setToken } from '../../../stores/user.store';
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -14,28 +14,8 @@ export default function CallbackPage() {
 			navigate('/');
 		} else if (token) {
 			setToken(token);
-			fetch('/api/auth/me', {
-				headers: {
-					Authorization: `Bearer ${token}`,
-				},
-			})
-				.then((response) => {
-					if (response.ok) {
-						return response.json();
-					} else {
-						throw new Error('Failed to fetch user data');
-					}
-				})
-				.then((userData) => {
-					console.log('User data:', userData);
-					setUser(userData);
-					navigate('/dashboard');
-				})
-				.catch((err) => {
-					console.error('Error fetching user data:', err);
-					navigate('/');
-				});
 		}
+        navigate('/dashboard');
 	}, [token, error, navigate]);
 
 	return (
