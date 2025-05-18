@@ -6,7 +6,6 @@ import {
 } from '@headlessui/react';
 import { Button } from '../../components/Button';
 
-
 export function DeleteTaskDialog({ isOpen, closeDialog, confirmDelete }: any) {
 	return (
 		<Dialog

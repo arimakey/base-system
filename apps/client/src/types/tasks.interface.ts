@@ -22,7 +22,6 @@ export interface CreateTaskDto {
 
 export type UpdateTaskDto = Partial<CreateTaskDto>;
 
-
 export interface TaskState {
 	tasks: Task[];
 	selectedTask: Task | null;
@@ -40,4 +39,6 @@ export interface TaskState {
 	setSearchTerm: (term: string) => void;
 	fetchAdminTasks: () => Promise<void>;
 	resetError: () => void;
+	logout: () => Promise<void>;
+	saveAccessTokenFromUrl: () => Promise<void>;
 }

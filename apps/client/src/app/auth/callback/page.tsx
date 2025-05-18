@@ -1,14 +1,12 @@
 // src/pages/auth/CallbackPage.tsx
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useUserStore } from '../../../stores/user.store';
+import { loginCallback } from '../../../stores/user.store';
 
 export default function CallbackPage() {
 	const location = useLocation();
 	const navigate = useNavigate();
 	const error = new URLSearchParams(location.search).get('error');
-
-	const loginCallback = useUserStore((state) => state.loginCallback);
 
 	useEffect(() => {
 		if (error) {

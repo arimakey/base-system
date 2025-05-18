@@ -37,14 +37,13 @@ export const useUserStore = create<UserState>()(
 					window.location.search
 				);
 				const token = searchParams.get('token');
-
 				if (!token) {
 					toast.error('Token no encontrado en la URL.');
 					navigate('/');
 					return;
 				}
 
-				set({ token });
+				setToken(token);
 
 				try {
 					const user = await userService.getCurrentUser();
@@ -107,7 +106,6 @@ export const useUserStore = create<UserState>()(
 	)
 );
 
-// Export helpers si los necesitas
 export const setUser = (user: User | null) =>
 	useUserStore.getState().setUser(user);
 export const setToken = (token: string | null) =>
@@ -117,3 +115,7 @@ export const setLoading = (loading: boolean) =>
 	useUserStore.getState().setLoading(loading);
 export const fetchUserData = (navigate: NavigateFunction) =>
 	useUserStore.getState().fetchUserData(navigate);
+export const loginCallback = (navigate: NavigateFunction) =>
+	useUserStore.getState().loginCallback(navigate);
+export const logout = (navigate: NavigateFunction) =>
+	useUserStore.getState().logout(navigate);

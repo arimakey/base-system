@@ -1,11 +1,11 @@
 import axios from 'axios';
+import { toast } from 'sonner';
 import { useUserStore } from '../stores/user.store';
 import { userService } from '../services/user.service';
-import { toast } from 'sonner';
 
 const api = axios.create({
-	baseURL: 'http://localhost:3000/api',
-	withCredentials: true
+	baseURL: import.meta.env.API_URL || 'http://localhost:5173/api',
+	withCredentials: true,
 });
 
 api.interceptors.request.use((config) => {
@@ -23,13 +23,11 @@ api.interceptors.response.use(
 		if (error.response?.status === 401 && !originalRequest._retry) {
 			originalRequest._retry = true;
 			try {
-				// Si tienes un endpoint de refresh, hazlo aquí
-				const newToken = await userService.refreshToken(); // Debes implementarlo
+				const newToken = await userService.refreshToken();
 				useUserStore.getState().setToken(newToken);
 				originalRequest.headers.Authorization = `Bearer ${newToken}`;
 				return api(originalRequest);
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-			} catch (refreshError) {
+			} catch {
 				useUserStore.getState().clearUser();
 				toast.error('Tu sesión ha expirado. Inicia sesión de nuevo.');
 				window.location.href = '/';
