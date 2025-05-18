@@ -24,6 +24,7 @@
 		"@nestjs/mapped-types": "^2.1.0",
 		"@nestjs/passport": "^11.0.5",
 		"@nestjs/platform-express": "^10.0.2",
+		"@nestjs/swagger": "^11.2.0",
 		"@nestjs/typeorm": "^10.0.2",
 		"@react-router/node": "^7.0.0",
 		"@react-router/serve": "^7.0.0",
@@ -50,6 +51,7 @@
 		"reflect-metadata": "^0.1.13",
 		"rxjs": "^7.8.0",
 		"sonner": "^2.0.3",
+		"swagger-ui-express": "^5.0.1",
 		"typeorm": "^0.3.20",
 		"zod": "^3.24.4",
 		"zustand": "^5.0.4"

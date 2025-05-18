@@ -71,35 +71,65 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 			error: 'No se pudo agregar la tarea.',
 		});
 	},
-
 	updateTask: async (id, data) => {
+		console.log(id, data);
 		set({ loading: true, error: null });
-		try {
-			const updated = await taskService.update(id, data);
-			set({ tasks: get().tasks.map((t) => (t.id === id ? updated : t)) });
-			// also update selected if open
-			if (get().selectedTask?.id === id) {
-				set({ selectedTask: updated });
-			}
-		} catch (err: any) {
-			set({ error: err.message });
-		} finally {
-			set({ loading: false });
-		}
+
+		const promise = taskService
+			.update(id, data)
+			.then((updated) => {
+				console.log(updated);
+
+				set({
+					tasks: get().tasks.map((t) => (t.id === id ? updated : t)),
+				});
+				if (get().selectedTask?.id === id) {
+					set({ selectedTask: updated });
+				}
+				return updated;
+			})
+			.catch((err: any) => {
+				console.log(err);
+				set({ error: err.message });
+				throw err;
+			})
+			.finally(() => {
+				set({ loading: false });
+			});
+
+		toast.promise(promise, {
+			loading: 'Actualizando tarea...',
+			success: (data) => `${data.title} ha sido actualizada.`,
+			error: 'No se pudo actualizar la tarea.',
+		});
 	},
 
 	deleteTask: async (id) => {
 		set({ loading: true, error: null });
-		try {
-			await taskService.remove(id);
-			set({ tasks: get().tasks.filter((t) => t.id !== id) });
-			if (get().selectedTask?.id === id) {
-				set({ selectedTask: null });
-			}
-		} catch (err: any) {
-			set({ error: err.message });
-		} finally {
-			set({ loading: false });
-		}
+
+		const promise = taskService
+			.remove(id)
+			.then(() => {
+				set({
+					tasks: get().tasks.filter((t) => t.id !== id),
+				});
+				if (get().selectedTask?.id === id) {
+					set({ selectedTask: null });
+				}
+				return { id }; // Devuelve un objeto mínimo para que `toast.success` tenga contexto
+			})
+			.catch((err: any) => {
+				set({ error: err.message });
+				throw err;
+			})
+			.finally(() => {
+				set({ loading: false });
+			});
+
+		toast.promise(promise, {
+			loading: 'Eliminando tarea...',
+			success: () => `Tarea eliminada correctamente.`,
+			error: 'No se pudo eliminar la tarea.',
+		});
 	},
 }));

@@ -1,18 +1,41 @@
-import { IsString, IsNotEmpty, IsOptional, IsEnum, MaxLength } from 'class-validator';
+import {
+	IsString,
+	IsNotEmpty,
+	IsOptional,
+	IsEnum,
+	MaxLength,
+} from 'class-validator';
 import { TaskStatus } from '../entities/task.entity';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateTaskDto {
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  title: string;
+	@ApiProperty({
+		description: 'Título de la tarea',
+		example: 'Completar informe trimestral',
+		required: true,
+	})
+	@IsString()
+	@IsNotEmpty()
+	@MaxLength(255)
+	title: string;
 
-  @IsString()
-  @IsOptional()
-  @MaxLength(1000)
-  description?: string;
+	@ApiProperty({
+		description: 'Descripción detallada de la tarea',
+		example: 'El informe debe incluir las métricas del último trimestre',
+		required: false,
+	})
+	@IsString()
+	@IsOptional()
+	@MaxLength(1000)
+	description?: string;
 
-  @IsEnum(TaskStatus)
-  @IsOptional()
-  status?: TaskStatus;
+	@ApiProperty({
+		description: 'Estado de la tarea',
+		enum: TaskStatus,
+		example: TaskStatus.PENDING,
+		required: false,
+	})
+	@IsEnum(TaskStatus)
+	@IsOptional()
+	status?: TaskStatus;
 }

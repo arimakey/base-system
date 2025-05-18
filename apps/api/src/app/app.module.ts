@@ -1,7 +1,5 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppService } from './app.service';
-import { AppController } from './app.controller';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { RefreshToken } from './auth/refresh-token.entity';
@@ -18,14 +16,12 @@ import { Task } from './tasks/entities/task.entity';
 			username: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
-			entities: [RefreshToken, Task], // Add Task entity here
+			entities: [RefreshToken, Task],
 			synchronize: true,
 			logging: true,
 		}),
 		AuthModule,
-		TasksModule, // Import TasksModule here
+		TasksModule, 
 	],
-	providers: [AppService],
-	controllers: [AppController],
 })
 export class AppModule {}
