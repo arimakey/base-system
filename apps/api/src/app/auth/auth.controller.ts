@@ -15,6 +15,8 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './google.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { User } from '../types/user';
+import { Permission } from './enums/permission.enum';
+import { rolePermissions } from './role-permissions.config';
 
 @Controller('auth')
 export class AuthController {
@@ -33,7 +35,17 @@ export class AuthController {
 	@UseGuards(JwtAuthGuard)
 	async getCurrentUser(@Req() req: { user: any }) {
 		console.log('Current user:', req.user);
-		return req.user;
+		// Calculate user permissions based on roles
+		const userPermissions = req.user.roles.reduce((acc, role) => {
+			const permissionsForRole = rolePermissions[role] || [];
+			return [...new Set([...acc, ...permissionsForRole])]; // Use Set to avoid duplicates
+		}, [] as Permission[]);
+
+		// Return user data with permissions
+		return {
+			...req.user,
+			permissions: userPermissions
+		};
 	}
 
 	@Post('logout')

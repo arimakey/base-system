@@ -10,7 +10,20 @@ import { getPriorityColor } from '../../../utils/priority';
 import { getDueStatus } from '../../../utils/dates';
 import { TaskMenu } from './task.menu';
 
-export function TaskSortableItem({ task, openDialog }) {
+interface TaskSortableItemProps {
+	task: any;
+	openDialog: (mode: 'create' | 'edit' | 'delete', id?: string) => void;
+	index: number;
+	canEdit?: boolean;
+	canDelete?: boolean;
+}
+export function TaskSortableItem({
+	task,
+	openDialog,
+	index,
+	canEdit = true,
+	canDelete = true
+}: TaskSortableItemProps) {
 	const {
 		attributes,
 		listeners,
@@ -100,8 +113,14 @@ export function TaskSortableItem({ task, openDialog }) {
 					</div>
 				</div>
 
-				<TaskMenu task={task} openDialog={openDialog} />
+				<TaskMenu
+					task={task}
+					openDialog={openDialog}
+					canEdit={canEdit}
+					canDelete={canDelete}
+				/>
 			</div>
 		</div>
 	);
 }
+

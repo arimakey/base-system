@@ -3,7 +3,10 @@ import { useUserStore } from '../stores/user.store';
 import { userService } from '../services/user.service';
 import { toast } from 'sonner';
 
-const api = axios.create();
+const api = axios.create({
+	baseURL: 'http://localhost:3000/api',
+	withCredentials: true
+});
 
 api.interceptors.request.use((config) => {
 	const token = useUserStore.getState().token;

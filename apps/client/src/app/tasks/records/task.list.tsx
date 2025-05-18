@@ -13,7 +13,23 @@ import {
 } from '@dnd-kit/sortable';
 import { TaskSortableItem } from './task.item';
 
-export function TaskList({ ordered, order, setOrder, openDialog }: any) {
+interface TaskListProps {
+	ordered: any[];
+	order: string[];
+	setOrder: (order: string[]) => void;
+	openDialog: (mode: 'create' | 'edit' | 'delete', id?: string) => void;
+	canEdit?: boolean;
+	canDelete?: boolean;
+}
+
+export function TaskList({
+	ordered,
+	order,
+	setOrder,
+	openDialog,
+	canEdit = true,
+	canDelete = true
+}: TaskListProps) {
 	const sensors = useSensors(
 		useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
 	);
@@ -44,6 +60,8 @@ export function TaskList({ ordered, order, setOrder, openDialog }: any) {
 							task={task}
 							index={i}
 							openDialog={openDialog}
+							canEdit={canEdit}
+							canDelete={canDelete}
 						/>
 					))}
 				</div>
@@ -51,3 +69,4 @@ export function TaskList({ ordered, order, setOrder, openDialog }: any) {
 		</DndContext>
 	);
 }
+

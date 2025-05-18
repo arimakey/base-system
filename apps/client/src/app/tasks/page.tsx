@@ -8,6 +8,8 @@ import { TaskSortableSkeleton } from './records/task.skeleton';
 import { Button } from '../components/Button';
 import { TaskDialogRouter } from './dialogs/task.dialog';
 import SearchBar from '../components/SearchBar';
+import { useUserStore } from '../../stores/user.store';
+import { Permission } from '../../types/permission.enum';
 
 const schema = z.object({
 	title: z.string().min(1, 'Título es obligatorio'),
@@ -15,14 +17,22 @@ const schema = z.object({
 });
 type FormData = z.infer<typeof schema>;
 
-export default function GestorTareas() {
+interface TasksPageProps {
+  isAdmin?: boolean;
+}
+
+export default function TasksPage({ isAdmin = false }: TasksPageProps) {
+	const { user } = useUserStore();
 	const {
 		tasks,
 		filteredTasks,
 		fetchTasks,
+		fetchAdminTasks,
 		createTask,
 		updateTask,
 		deleteTask,
+		updateAdminTask,
+		deleteAdminTask,
 		loadingFetch,
 		error,
 		setSearchTerm,
@@ -42,9 +52,18 @@ export default function GestorTareas() {
 	const [currentId, setCurrentId] = useState<string | null>(null);
 	const [order, setOrder] = useState<string[]>([]);
 
+	// Check if user has admin permissions
+	const hasAdminPermission = user?.permissions?.includes(Permission.TASK_READ_ANY_LIST) || false;
+
 	useEffect(() => {
-		fetchTasks();
-	}, [fetchTasks]);
+		// Use the appropriate fetch method based on isAdmin and permissions
+		if (isAdmin && hasAdminPermission) {
+			fetchAdminTasks();
+		} else {
+			fetchTasks();
+		}
+	}, [fetchTasks, fetchAdminTasks, isAdmin, hasAdminPermission]);
+
 	useEffect(() => setOrder(filteredTasks.map((t) => t.id)), [filteredTasks]);
 	useEffect(() => {
 		if (isOpen && (dialogMode === 'edit' || dialogMode === 'create')) {
@@ -67,18 +86,30 @@ export default function GestorTareas() {
 	const closeDialog = () => setIsOpen(false);
 
 	const onSubmit = async (data: FormData) => {
-		if (dialogMode === 'edit' && currentId)
-			await updateTask(currentId, data);
-		if (dialogMode === 'create')
+		if (dialogMode === 'edit' && currentId) {
+			if (isAdmin && hasAdminPermission) {
+				await updateAdminTask(currentId, data);
+			} else {
+				await updateTask(currentId, data);
+			}
+		}
+		if (dialogMode === 'create') {
 			await createTask({
 				title: data.title,
 				description: data.description,
 			});
+		}
 		closeDialog();
 	};
 
 	const confirmDelete = () => {
-		if (currentId) deleteTask(currentId);
+		if (currentId) {
+			if (isAdmin && hasAdminPermission) {
+				deleteAdminTask(currentId);
+			} else {
+				deleteTask(currentId);
+			}
+		}
 		closeDialog();
 	};
 
@@ -87,10 +118,19 @@ export default function GestorTareas() {
 		.map((id) => filteredTasks.find((t) => t.id === id))
 		.filter(Boolean) as typeof tasks;
 
+	// Check user's permissions for displaying buttons
+	const canCreate = user?.permissions?.includes(Permission.TASK_CREATE);
+	const canEdit = isAdmin
+	  ? user?.permissions?.includes(Permission.TASK_UPDATE_ANY)
+	  : user?.permissions?.includes(Permission.TASK_UPDATE_OWN);
+	const canDelete = isAdmin
+	  ? user?.permissions?.includes(Permission.TASK_DELETE_ANY)
+	  : user?.permissions?.includes(Permission.TASK_DELETE_OWN);
+
 	return (
 		<div className="max-w-3xl mx-auto p-4 flex flex-col gap-4">
 			<h1 className="text-2xl font-semibold text-center mb-6">
-				Gestor de Tareas
+				{isAdmin ? 'Administración de Tareas' : 'Mis Tareas'}
 			</h1>
 			{error && (
 				<div className="p-2 mb-4 bg-red-50 text-red-700 rounded-md">
@@ -103,10 +143,12 @@ export default function GestorTareas() {
 					placeholder="Buscar por título o descripción..."
 					className="flex-grow"
 				/>
+				{canCreate && (
 				<Button onClick={() => openDialog('create')}>
 					Nueva Tarea
 				</Button>
-			</div>
+			)}
+		</div>
 			{loadingFetch ? (
 				<div className="space-y-4">
 					{Array.from({ length: 4 }).map((_, i) => (
@@ -121,6 +163,8 @@ export default function GestorTareas() {
 					order={order}
 					setOrder={setOrder}
 					openDialog={openDialog}
+					canEdit={canEdit}
+					canDelete={canDelete}
 				/>
 			)}
 			<TaskDialogRouter
@@ -136,3 +180,4 @@ export default function GestorTareas() {
 		</div>
 	);
 }
+

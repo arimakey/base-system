@@ -5,6 +5,7 @@ import LandingPage from '../landing/index/page';
 import UserConfigPage from '../config/page';
 import TasksPage from '../tasks/page';
 import AuthGuard from '../components/AuthGuard';
+import DashboardLayout from '../components/DashboardLayout';
 
 interface RouteConfig {
 	path: string;
@@ -25,19 +26,55 @@ export const routes: RouteConfig[] = [
 		element: <RegisterPage />,
 	},
 	{
-		path: '/config',
-		element: <AuthGuard>
-			<UserConfigPage />
-		</AuthGuard>,
+		path: '/settings',
+		element: (
+			<AuthGuard>
+				<DashboardLayout>
+					<UserConfigPage />
+				</DashboardLayout>
+			</AuthGuard>
+		),
 	},
-    {
-        path: '/dashboard',
-        element: <AuthGuard>
-			<TasksPage />
-		</AuthGuard>,
-    },
+	{
+		path: '/dashboard',
+		element: (
+			<AuthGuard>
+				<DashboardLayout>
+					<TasksPage />
+				</DashboardLayout>
+			</AuthGuard>
+		),
+	},
+	{
+		path: '/tasks',
+		element: (
+			<AuthGuard>
+				<DashboardLayout>
+					<TasksPage />
+				</DashboardLayout>
+			</AuthGuard>
+		),
+	},
+	{
+		path: '/admin/tasks',
+		element: (
+			<AuthGuard>
+				<DashboardLayout>
+					<TasksPage isAdmin={true} />
+				</DashboardLayout>
+			</AuthGuard>
+		),
+	},
 	{
 		path: '/auth/login/callback',
 		element: <CallbackPage />,
+	},
+	{
+		path: '/auth/logout',
+		element: (
+			<AuthGuard>
+				<div>Logging out...</div>
+			</AuthGuard>
+		),
 	},
 ];

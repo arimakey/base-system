@@ -1,7 +1,7 @@
 import api from '../lib/axios';
 import { Task, CreateTaskDto, UpdateTaskDto } from '../types/tasks.interface';
 
-const API_BASE = '/api/tasks';
+const API_BASE = '/tasks';
 
 export const taskService = {
 	async getAll(): Promise<Task[]> {
