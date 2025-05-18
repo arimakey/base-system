@@ -5,6 +5,7 @@ import { ConfigModule } from '@nestjs/config';
 import { RefreshToken } from './auth/refresh-token.entity';
 import { TasksModule } from './tasks/tasks.module';
 import { Task } from './tasks/entities/task.entity';
+import { UserEntity } from './auth/entities/user.entity';
 
 @Module({
 	imports: [
@@ -16,12 +17,12 @@ import { Task } from './tasks/entities/task.entity';
 			username: process.env.DB_USER,
 			password: process.env.DB_PASSWORD,
 			database: process.env.DB_NAME,
-			entities: [RefreshToken, Task],
+			entities: [RefreshToken, Task, UserEntity],
 			synchronize: true,
 			logging: true,
 		}),
 		AuthModule,
-		TasksModule, 
+		TasksModule,
 	],
 })
 export class AppModule {}

@@ -12,7 +12,7 @@ import { RefreshToken } from './refresh-token.entity'; // Asegurarnos que la rut
 import { JwtStrategy } from './jwt.strategy';
 import { JwtRefreshStrategy } from './jwt-refresh.strategy';
 import { PermissionsGuard } from './guards/permissions.guard';
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 
 @Module({
 	imports: [

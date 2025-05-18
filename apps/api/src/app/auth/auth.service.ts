@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './google.strategy';
 import { User } from '../types/user';
 import { Role } from './enums/role.enum';
-import { UserEntity } from '../entities/user.entity';
+import { UserEntity } from './entities/user.entity';
 
 @Injectable()
 export class AuthService {
