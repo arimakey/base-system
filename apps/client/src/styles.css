@@ -1,2 +1,18 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+.skeleton {
+  background-color: #e2e8f0; /* gris claro */
+  border-radius: 4px;
+  animation: pulse 1.5s ease-in-out infinite;
+}

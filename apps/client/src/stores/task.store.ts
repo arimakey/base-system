@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 interface TaskState {
 	tasks: Task[];
 	selectedTask: Task | null;
-	loading: boolean;
+	loadingFetch: boolean;
 	error: string | null;
 
 	fetchTasks: () => Promise<void>;
@@ -20,49 +20,55 @@ interface TaskState {
 export const useTaskStore = create<TaskState>((set, get) => ({
 	tasks: [],
 	selectedTask: null,
-	loading: false,
+	loadingFetch: false,
 	error: null,
 
 	fetchTasks: async () => {
-		set({ loading: true, error: null });
+		set({ loadingFetch: true, error: null });
 		try {
 			const tasks = await taskService.getAll();
 			set({ tasks });
 		} catch (err: any) {
 			set({ error: err.message });
 		} finally {
-			set({ loading: false });
+			set({ loadingFetch: false });
 		}
 	},
 
 	selectTask: (task) => set({ selectedTask: task }),
 
 	fetchTaskById: async (id) => {
-		set({ loading: true, error: null });
+		set({ loadingFetch: true, error: null });
 		try {
 			const task = await taskService.getById(id);
 			set({ selectedTask: task });
 		} catch (err: any) {
 			set({ error: err.message });
 		} finally {
-			set({ loading: false });
+			set({ loadingFetch: false });
 		}
 	},
+
 	createTask: async (data) => {
-		set({ loading: true, error: null });
+		// Optimistic update
+		const tempId = `temp-${Date.now()}`;
+		const optimisticTask: Task = { ...data, id: tempId } as Task;
+		const prevTasks = get().tasks;
+		set({ tasks: [...prevTasks, optimisticTask] });
 
 		const promise = taskService
 			.create(data)
 			.then((newTask) => {
-				set({ tasks: [...get().tasks, newTask] });
+				set({
+					tasks: get().tasks.map((t) =>
+						t.id === tempId ? newTask : t
+					),
+				});
 				return newTask;
 			})
 			.catch((err: any) => {
-				set({ error: err.message });
+				set({ tasks: prevTasks, error: err.message });
 				throw err;
-			})
-			.finally(() => {
-				set({ loading: false });
 			});
 
 		toast.promise(promise, {
@@ -71,15 +77,26 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 			error: 'No se pudo agregar la tarea.',
 		});
 	},
+
 	updateTask: async (id, data) => {
-		console.log(id, data);
-		set({ loading: true, error: null });
+		const prevTasks = get().tasks;
+		const prevSelected = get().selectedTask;
+		const updatedTask = {
+			...prevTasks.find((t) => t.id === id),
+			...data,
+		} as Task;
+
+		// Optimistic update
+		set({
+			tasks: prevTasks.map((t) => (t.id === id ? updatedTask : t)),
+		});
+		if (prevSelected?.id === id) {
+			set({ selectedTask: updatedTask });
+		}
 
 		const promise = taskService
 			.update(id, data)
 			.then((updated) => {
-				console.log(updated);
-
 				set({
 					tasks: get().tasks.map((t) => (t.id === id ? updated : t)),
 				});
@@ -89,12 +106,12 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 				return updated;
 			})
 			.catch((err: any) => {
-				console.log(err);
-				set({ error: err.message });
+				set({
+					tasks: prevTasks,
+					selectedTask: prevSelected,
+					error: err.message,
+				});
 				throw err;
-			})
-			.finally(() => {
-				set({ loading: false });
 			});
 
 		toast.promise(promise, {
@@ -105,25 +122,29 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 	},
 
 	deleteTask: async (id) => {
-		set({ loading: true, error: null });
+		const prevTasks = get().tasks;
+		const prevSelected = get().selectedTask;
+
+		// Optimistic update
+		set({
+			tasks: prevTasks.filter((t) => t.id !== id),
+		});
+		if (prevSelected?.id === id) {
+			set({ selectedTask: null });
+		}
 
 		const promise = taskService
 			.remove(id)
 			.then(() => {
-				set({
-					tasks: get().tasks.filter((t) => t.id !== id),
-				});
-				if (get().selectedTask?.id === id) {
-					set({ selectedTask: null });
-				}
-				return { id }; // Devuelve un objeto mínimo para que `toast.success` tenga contexto
+				return { id };
 			})
 			.catch((err: any) => {
-				set({ error: err.message });
+				set({
+					tasks: prevTasks,
+					selectedTask: prevSelected,
+					error: err.message,
+				});
 				throw err;
-			})
-			.finally(() => {
-				set({ loading: false });
 			});
 
 		toast.promise(promise, {

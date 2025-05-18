@@ -13,6 +13,24 @@ import {
 import { useTaskStore } from '../../stores/task.store';
 import { CreateTaskDto, Task } from '../../types/tasks.interface';
 
+// SkeletonRow para mostrar mientras carga
+function SkeletonRow() {
+	return (
+		<tr>
+			<td className="px-4 py-2">
+				<div className="h-4 w-24 skeleton"></div>
+			</td>
+			<td className="px-4 py-2">
+				<div className="h-4 w-48 skeleton"></div>
+			</td>
+			<td className="px-4 py-2">
+				<div className="h-6 w-20 skeleton inline-block"></div>
+				<div className="h-6 w-20 skeleton inline-block ml-2"></div>
+			</td>
+		</tr>
+	);
+}
+
 export default function TasksPage() {
 	const {
 		tasks,
@@ -22,7 +40,7 @@ export default function TasksPage() {
 		createTask,
 		updateTask,
 		deleteTask,
-		loading,
+		loadingFetch,
 		error,
 	} = useTaskStore();
 
@@ -160,7 +178,6 @@ export default function TasksPage() {
 				<div className="flex items-center">
 					<button
 						type="submit"
-						disabled={loading}
 						className="px-4 py-2 rounded text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
 					>
 						{selectedTask ? 'Update Task' : 'Create Task'}
@@ -177,9 +194,35 @@ export default function TasksPage() {
 				</div>
 			</form>
 
-			{loading ? (
-				<div className="text-center p-4 text-gray-600">
-					Loading tasks...
+			{loadingFetch ? (
+				<div className="overflow-x-auto">
+					<table className="min-w-full border-collapse">
+						<thead>
+							{table.getHeaderGroups().map((headerGroup) => (
+								<tr
+									key={headerGroup.id}
+									className="border-b border-gray-300 bg-gray-100"
+								>
+									{headerGroup.headers.map((header) => (
+										<th
+											key={header.id}
+											className="px-4 py-2 text-left font-semibold"
+										>
+											{flexRender(
+												header.column.columnDef.header,
+												header.getContext()
+											)}
+										</th>
+									))}
+								</tr>
+							))}
+						</thead>
+						<tbody>
+							{[...Array(5)].map((_, i) => (
+								<SkeletonRow key={i} />
+							))}
+						</tbody>
+					</table>
 				</div>
 			) : tasks.length === 0 ? (
 				<div className="text-center p-4 border rounded bg-gray-50">
