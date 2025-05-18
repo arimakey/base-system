@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { GoogleUser } from './google.strategy';
 import { User } from '../types/user';
 import { Role } from './enums/role.enum';
+import { UserEntity } from '../entities/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -15,18 +16,28 @@ export class AuthService {
 		private jwtService: JwtService,
 		private configService: ConfigService,
 		@InjectRepository(RefreshToken)
-		private refreshTokenRepository: Repository<RefreshToken>
+		private refreshTokenRepository: Repository<RefreshToken>,
+		@InjectRepository(UserEntity)
+		private userRepository: Repository<UserEntity>
 	) {}
 
 	async findOrCreateUserFromGoogle(googleUser: GoogleUser): Promise<User> {
-		// Aquí normalmente buscarías en la base de datos e insertarías si no existe
-		// Para este ejemplo simplemente devolvemos el usuario
-		return {
-			id: googleUser.googleId,
-			email: googleUser.email,
-			name: googleUser.name,
-			roles: [Role.USER], // Assign default role
-		};
+		let user = await this.userRepository.findOne({
+			where: [{ googleId: googleUser.googleId }, { email: googleUser.email }],
+		});
+
+		if (!user) {
+			user = this.userRepository.create({
+				id: googleUser.googleId,
+				email: googleUser.email,
+				name: googleUser.name,
+				roles: [Role.USER],
+				googleId: googleUser.googleId,
+			});
+			await this.userRepository.save(user);
+		}
+
+		return user;
 	}
 
 	async generateAccessToken(user: User) {
@@ -35,7 +46,7 @@ export class AuthService {
 				sub: user.id,
 				email: user.email,
 				name: user.name,
-				roles: user.roles, // Include roles in JWT payload
+				roles: user.roles,
 			},
 			{
 				secret: this.configService.get('JWT_SECRET'),
@@ -45,8 +56,7 @@ export class AuthService {
 	}
 
 	async generateRefreshToken(user: User) {
-		// Primero creamos el token JWT para el refresh
-		const jwtRefreshToken = this.jwtService.sign(
+		this.jwtService.sign(
 			{ sub: user.id },
 			{
 				secret: this.configService.get('JWT_REFRESH_SECRET'),
@@ -81,15 +91,13 @@ export class AuthService {
 			throw new UnauthorizedException('Invalid or expired refresh token');
 		}
 
-		// En una aplicación real, aquí buscarías el usuario completo en la base de datos
-		// En una aplicación real, aquí buscarías el usuario completo en la base de datos
-		// incluyendo sus roles. Por ahora, asignamos un rol por defecto.
-		const user: User = {
+		const user = await this.userRepository.findOneBy({
 			id: refreshToken.userId,
-			email: 'user@example.com', // Esto debería venir de la base de datos
-			name: 'User Name', // Esto debería venir de la base de datos
-			roles: [Role.USER], // Asignar rol por defecto para satisfacer el tipo
-		};
+		});
+
+		if (!user) {
+			throw new UnauthorizedException('User not found');
+		}
 
 		return user;
 	}
