@@ -6,6 +6,7 @@ export interface User {
 	name: string;
 	picture?: string;
 	permissions?: string[]; // Add permissions array
+	roles?: string[]; // Add roles array
 }
 
 export interface UserState {
@@ -22,4 +23,3 @@ export interface UserState {
 	fetchUserData: (navigate: NavigateFunction) => Promise<void>;
 	logout: (navigate: NavigateFunction) => Promise<void>;
 }
-

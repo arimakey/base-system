@@ -1,7 +1,8 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../stores/user.store';
 import { Permission } from '../../types/permission.enum';
+import { useAuth } from '../hooks/useAuth'; // Importar el hook useAuth
 
 // Define navigation items with required permissions
 interface NavItem {
@@ -45,6 +46,8 @@ const navItems: NavItem[] = [
 
 const Sidebar: React.FC = () => {
 	const { user } = useUserStore();
+	const { logout } = useAuth(); // Usar el hook useAuth
+	const navigate = useNavigate();
 
 	if (!user || !user.permissions) {
 		return null;
@@ -55,6 +58,11 @@ const Sidebar: React.FC = () => {
 			!item.requiredPermission ||
 			user.permissions?.includes(item.requiredPermission)
 	);
+
+	const handleLogout = () => {
+		logout(); // Llamar a la funci&#243;n logout del hook useAuth
+		navigate('/auth/logout'); // Navegar a la ruta de logout
+	};
 
 	return (
 		<aside className="w-64 bg-gray-800 text-white h-screen p-4">
@@ -84,13 +92,13 @@ const Sidebar: React.FC = () => {
 			</nav>
 
 			<div className="absolute bottom-4 w-52">
-				<NavLink
-					to="/auth/logout"
+				<button
+					onClick={handleLogout}
 					className="flex items-center p-2 rounded hover:bg-gray-700 transition-colors w-full"
 				>
 					<span className="mr-3">🚪</span>
 					Logout
-				</NavLink>
+				</button>
 			</div>
 		</aside>
 	);

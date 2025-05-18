@@ -1,4 +1,4 @@
-export default function CallbackPage() {
+export default function LoginPage() {
 	return (
 		<div>
 			<h1>Google Callback Page</h1>

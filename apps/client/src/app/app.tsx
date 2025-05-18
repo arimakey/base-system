@@ -1,13 +1,13 @@
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
-import { routes } from './routes';
+import { appRoutes } from './routes/index.routes';
 
 export function App() {
 	return (
 		<>
 			<Toaster richColors />
 			<Routes>
-				{routes.map((route) => (
+				{appRoutes.map((route) => (
 					<Route
 						key={route.path}
 						path={route.path}

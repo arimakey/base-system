@@ -22,7 +22,7 @@ const AuthGuard = ({
   const token = useUserStore((state) => state.token);
   const loading = useUserStore((state) => state.loading);
   const location = useLocation();
-  
+
   // Memorizar el valor de autenticación para evitar cálculos repetidos
   const isAuthenticated = useMemo(() => !!token, [token]);
 
@@ -34,10 +34,10 @@ const AuthGuard = ({
   // Si no está autenticado, redirigir al login guardando la ubicación actual
   if (!isAuthenticated) {
     return (
-      <Navigate 
-        to={redirectTo} 
-        state={{ from: location.pathname }} 
-        replace 
+      <Navigate
+        to={redirectTo}
+        state={{ from: location.pathname }}
+        replace
       />
     );
   }

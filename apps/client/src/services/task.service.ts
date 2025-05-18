@@ -27,4 +27,9 @@ export const taskService = {
 	async remove(id: string): Promise<void> {
 		await api.delete(`${API_BASE}/${id}`);
 	},
+
+	async getAllAdmin(): Promise<Task[]> {
+		const response = await api.get(`${API_BASE}/all`);
+		return response.data;
+	},
 };
