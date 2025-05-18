@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { toast } from 'sonner';
-import { User, UserState } from '../types/user.interface';
 import { NavigateFunction } from 'react-router-dom';
+import { userService } from '../services/user.service';
+import { User, UserState } from '../types/user.interface';
 
 const initialState: Pick<UserState, 'user' | 'token' | 'loading'> = {
 	user: null,
@@ -31,6 +32,33 @@ export const useUserStore = create<UserState>()(
 
 			setLoading: (loading: boolean) => set({ loading }),
 
+			loginCallback: async (navigate: NavigateFunction) => {
+				const searchParams = new URLSearchParams(
+					window.location.search
+				);
+				const token = searchParams.get('token');
+
+				if (!token) {
+					toast.error('Token no encontrado en la URL.');
+					navigate('/');
+					return;
+				}
+
+				set({ token });
+
+				try {
+					const user = await userService.getCurrentUser();
+					set({ user });
+					toast.success('Sesión iniciada correctamente');
+					navigate('/dashboard');
+				} catch (error: any) {
+					console.error('Error al validar token', error);
+					set({ token: null, user: null });
+					toast.error('Error de autenticación. Redirigiendo...');
+					navigate('/');
+				}
+			},
+
 			fetchUserData: async (navigate: NavigateFunction) => {
 				set({ loading: true });
 				const { token } = get();
@@ -45,18 +73,8 @@ export const useUserStore = create<UserState>()(
 				}
 
 				try {
-					const response = await fetch('/api/auth/me', {
-						headers: { Authorization: `Bearer ${token}` },
-					});
-
-					if (!response.ok) {
-						throw new Error(
-							'Error al obtener los datos del usuario'
-						);
-					}
-
-					const userData: User = await response.json();
-					set({ user: userData, loading: false });
+					const user = await userService.getCurrentUser();
+					set({ user, loading: false });
 					toast.success('Bienvenido de nuevo');
 					navigate('/dashboard');
 				} catch (error) {
@@ -66,9 +84,21 @@ export const useUserStore = create<UserState>()(
 					navigate('/');
 				}
 			},
+
+			logout: async (navigate: NavigateFunction) => {
+				try {
+					await userService.logout();
+					set({ token: null, user: null });
+					toast.success('Sesión cerrada correctamente');
+					navigate('/');
+				} catch (error) {
+					console.error('Logout failed', error);
+					toast.error('No se pudo cerrar sesión');
+				}
+			},
 		}),
 		{
-			name: 'user-auth-storage', // clave en localStorage
+			name: 'user-auth-storage',
 			partialize: (state) => ({
 				token: state.token,
 				user: state.user,
@@ -77,7 +107,7 @@ export const useUserStore = create<UserState>()(
 	)
 );
 
-// helper exports
+// Export helpers si los necesitas
 export const setUser = (user: User | null) =>
 	useUserStore.getState().setUser(user);
 export const setToken = (token: string | null) =>

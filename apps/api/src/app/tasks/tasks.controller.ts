@@ -63,6 +63,7 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Tarea no encontrada' })
   @RequirePermissions(Permission.TASK_READ_OWN_DETAIL)
   findOneOwn(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() user: AuthUser) {
+    console.log('findOneOwn', id, user);
     return this.tasksService.findOneByOwner(id, user.id);
   }
 

@@ -1,4 +1,4 @@
-import { NavigateFunction } from "react-router-dom";
+import { NavigateFunction } from 'react-router-dom';
 
 export interface User {
 	id: string;
@@ -10,11 +10,14 @@ export interface User {
 export interface UserState {
 	user: User | null;
 	token: string | null;
-	loading: boolean; // ← add this
+	loading: boolean;
 
 	setUser: (user: User | null) => void;
 	setToken: (token: string | null) => void;
 	clearUser: () => void;
 	setLoading: (loading: boolean) => void;
+
+	loginCallback: (navigate: NavigateFunction) => void;
 	fetchUserData: (navigate: NavigateFunction) => Promise<void>;
+	logout: (navigate: NavigateFunction) => Promise<void>;
 }

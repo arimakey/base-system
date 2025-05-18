@@ -1,27 +1,27 @@
-import { setToken } from '../../../stores/user.store';
+// src/pages/auth/CallbackPage.tsx
 import { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useUserStore } from '../../../stores/user.store';
 
 export default function CallbackPage() {
 	const location = useLocation();
 	const navigate = useNavigate();
-	const searchParams = new URLSearchParams(location.search);
-	const token = searchParams.get('token');
-	const error = searchParams.get('error');
+	const error = new URLSearchParams(location.search).get('error');
+
+	const loginCallback = useUserStore((state) => state.loginCallback);
 
 	useEffect(() => {
 		if (error) {
 			navigate('/');
-		} else if (token) {
-			setToken(token);
+		} else {
+			loginCallback(navigate);
 		}
-        navigate('/dashboard');
-	}, [token, error, navigate]);
+	}, [error, navigate, loginCallback]);
 
 	return (
 		<div>
 			<h1>Google Callback Page</h1>
-			<p>Processing Google authentication...</p>
+			<p>Procesando autenticación de Google...</p>
 			{error && <p style={{ color: 'red' }}>Error: {error}</p>}
 		</div>
 	);
