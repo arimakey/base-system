@@ -11,7 +11,7 @@ import {
 	verticalListSortingStrategy,
 	arrayMove,
 } from '@dnd-kit/sortable';
-import { TaskSortableItem } from './TaskSortableItem';
+import { TaskSortableItem } from './task.item';
 
 export function TaskList({ ordered, order, setOrder, openDialog }: any) {
 	const sensors = useSensors(

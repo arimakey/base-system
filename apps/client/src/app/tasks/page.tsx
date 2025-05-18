@@ -3,9 +3,10 @@ import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTaskStore } from '../../stores/task.store';
-import { TaskDialog } from './TaskDialog';
-import { TaskList } from './TaskList';
-import { TaskSortableSkeleton } from './skeleton';
+import { TaskList } from './records/task.list';
+import { TaskSortableSkeleton } from './records/task.skeleton';
+import { Button } from '../components/Button';
+import { TaskDialogRouter } from './dialogs/task.dialog';
 
 const schema = z.object({
 	title: z.string().min(1, 'Título es obligatorio'),
@@ -79,7 +80,7 @@ export default function GestorTareas() {
 		.filter(Boolean) as typeof tasks;
 
 	return (
-		<div className="max-w-3xl mx-auto p-4">
+		<div className="max-w-3xl mx-auto p-4 flex flex-col gap-4">
 			<h1 className="text-2xl font-semibold text-center mb-6">
 				Gestor de Tareas
 			</h1>
@@ -88,12 +89,7 @@ export default function GestorTareas() {
 					Error: {error}
 				</div>
 			)}
-			<button
-				onClick={() => openDialog('create')}
-				className="w-full mb-6 py-2 rounded-md bg-black text-white hover:bg-neutral-800 transition-colors duration-200 cursor-pointer active:scale-95 focus:outline-none"
-			>
-				Nueva Tarea
-			</button>
+			<Button onClick={() => openDialog('create')}>Nueva Tarea</Button>
 			{loadingFetch ? (
 				<div className="space-y-4">
 					{Array.from({ length: 4 }).map((_, i) => (
@@ -110,7 +106,7 @@ export default function GestorTareas() {
 					openDialog={openDialog}
 				/>
 			)}
-			<TaskDialog
+			<TaskDialogRouter
 				isOpen={isOpen}
 				closeDialog={closeDialog}
 				dialogMode={dialogMode}
