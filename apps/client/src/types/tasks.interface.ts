@@ -21,3 +21,23 @@ export interface CreateTaskDto {
 }
 
 export type UpdateTaskDto = Partial<CreateTaskDto>;
+
+
+export interface TaskState {
+	tasks: Task[];
+	selectedTask: Task | null;
+	loadingFetch: boolean;
+	error: string | null;
+	searchTerm: string;
+	filteredTasks: Task[];
+
+	fetchTasks: () => Promise<void>;
+	selectTask: (task: Task | null) => void;
+	fetchTaskById: (id: string) => Promise<void>;
+	createTask: (data: CreateTaskDto) => Promise<void>;
+	updateTask: (id: string, data: UpdateTaskDto) => Promise<void>;
+	deleteTask: (id: string) => Promise<void>;
+	setSearchTerm: (term: string) => void;
+	fetchAdminTasks: () => Promise<void>;
+	resetError: () => void;
+}

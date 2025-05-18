@@ -12,17 +12,25 @@ import { TaskMenu } from './task.menu';
 
 interface TaskSortableItemProps {
 	task: any;
-	openDialog: (mode: 'create' | 'edit' | 'delete', id?: string) => void;
+	openDialog: (
+		mode: 'create' | 'edit' | 'delete' | 'view',
+		id?: string
+	) => void;
 	index: number;
 	canEdit?: boolean;
 	canDelete?: boolean;
+	canView?: boolean;
+	isDraggable?: boolean;
 }
+
 export function TaskSortableItem({
 	task,
 	openDialog,
 	index,
 	canEdit = true,
-	canDelete = true
+	canDelete = true,
+	canView = true,
+	isDraggable = true,
 }: TaskSortableItemProps) {
 	const {
 		attributes,
@@ -31,7 +39,10 @@ export function TaskSortableItem({
 		transform,
 		transition,
 		isDragging,
-	} = useSortable({ id: task.id });
+	} = useSortable({
+		id: task.id,
+		disabled: !isDraggable,
+	});
 
 	const style = {
 		transform: CSS.Transform.toString(transform),
@@ -43,22 +54,35 @@ export function TaskSortableItem({
 	const priorityClass = getPriorityColor(task.priority);
 	const completedClass = task.completed ? 'border-l-4 border-green-500' : '';
 
+	const handleTaskClick = () => {
+		if (canView) {
+			openDialog('view', task.id);
+		}
+	};
+
 	return (
 		<div
 			ref={setNodeRef}
 			style={style}
-			{...attributes}
-			className={`flex rounded-lg bg-white border border-gray-200 mb-3 ${completedClass}`}
+			className={`flex rounded-lg bg-white border border-gray-200 mb-3 ${completedClass} ${
+				canView ? 'cursor-pointer' : ''
+			}`}
 		>
-			<div
-				{...listeners}
-				className="cursor-grab w-10 flex items-center justify-center bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
-				aria-label="Drag handle"
-			>
-				<HiViewGrid className="w-5 h-5" />
-			</div>
+			{isDraggable && (
+				<div
+					{...attributes}
+					{...listeners}
+					className="cursor-grab w-10 flex items-center justify-center bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
+					aria-label="Drag handle"
+				>
+					<HiViewGrid className="w-5 h-5" />
+				</div>
+			)}
 
-			<div className="flex flex-1 p-4">
+			<div
+				className="flex flex-1 p-4"
+				onClick={canView ? handleTaskClick : undefined}
+			>
 				<div className="flex-1">
 					<div className="flex items-center flex-wrap gap-2 mb-1">
 						<h3 className="font-medium text-gray-900">
@@ -81,7 +105,7 @@ export function TaskSortableItem({
 					</div>
 
 					{task.description && (
-						<p className="text-gray-600 text-sm mt-1">
+						<p className="text-gray-600 text-sm mt-1 line-clamp-2">
 							{task.description}
 						</p>
 					)}
@@ -110,6 +134,14 @@ export function TaskSortableItem({
 								<span>{task.tags.join(', ')}</span>
 							</div>
 						)}
+
+						{task.assignedTo && (
+							<div className="flex items-center">
+								<span className="bg-gray-100 rounded-full px-2 py-0.5">
+									{task.assignedTo}
+								</span>
+							</div>
+						)}
 					</div>
 				</div>
 
@@ -118,9 +150,9 @@ export function TaskSortableItem({
 					openDialog={openDialog}
 					canEdit={canEdit}
 					canDelete={canDelete}
+					canView={canView}
 				/>
 			</div>
 		</div>
 	);
 }
-

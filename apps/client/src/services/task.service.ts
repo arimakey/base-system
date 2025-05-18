@@ -9,8 +9,16 @@ export const taskService = {
 		return response.data;
 	},
 
-	async getById(id: string): Promise<Task> {
-		const response = await api.get<Task>(`${API_BASE}/${id}`);
+	async getAllAdmin(): Promise<Task[]> {
+		const response = await api.get<Task[]>(`${API_BASE}/all`);
+		return response.data;
+	},
+
+	async getById(id: string, isAdmin = false): Promise<Task> {
+		const endpoint = isAdmin
+			? `${API_BASE}/admin/${id}`
+			: `${API_BASE}/${id}`;
+		const response = await api.get<Task>(endpoint);
 		return response.data;
 	},
 
@@ -19,17 +27,22 @@ export const taskService = {
 		return response.data;
 	},
 
-	async update(id: string, data: UpdateTaskDto): Promise<Task> {
-		const response = await api.patch<Task>(`${API_BASE}/${id}`, data);
+	async update(
+		id: string,
+		data: UpdateTaskDto,
+		isAdmin = false
+	): Promise<Task> {
+		const endpoint = isAdmin
+			? `${API_BASE}/admin/${id}`
+			: `${API_BASE}/${id}`;
+		const response = await api.patch<Task>(endpoint, data);
 		return response.data;
 	},
 
-	async remove(id: string): Promise<void> {
-		await api.delete(`${API_BASE}/${id}`);
-	},
-
-	async getAllAdmin(): Promise<Task[]> {
-		const response = await api.get(`${API_BASE}/all`);
-		return response.data;
+	async remove(id: string, isAdmin = false): Promise<void> {
+		const endpoint = isAdmin
+			? `${API_BASE}/admin/${id}`
+			: `${API_BASE}/${id}`;
+		await api.delete(endpoint);
 	},
 };

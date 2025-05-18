@@ -1,16 +1,31 @@
-import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
-import { HiOutlineDotsVertical } from 'react-icons/hi';
-import { FiEdit, FiXCircle, FiCheckCircle, FiTrash2 } from 'react-icons/fi';
+import {
+	Menu,
+	MenuButton,
+	MenuItem,
+	MenuItems,
+	Transition,
+} from '@headlessui/react';
+import {
+	HiDotsVertical,
+	HiPencil,
+	HiTrash,
+	HiEye,
+	HiCheck,
+	HiX,
+} from 'react-icons/hi';
+import { Fragment } from 'react';
+import { useTaskStore } from '../../../stores/task.store';
+import { Task, TaskStatus } from '../../../types/tasks.interface';
 
 interface TaskMenuProps {
-	task: { id: string; completed: boolean }; // Replace with your actual Task type if available
+	task: Task;
 	openDialog: (
-		mode: 'create' | 'edit' | 'delete' | 'state',
-		id?: string,
-		options?: Record<string, unknown>
+		mode: 'create' | 'edit' | 'delete' | 'view',
+		id?: string
 	) => void;
 	canEdit?: boolean;
 	canDelete?: boolean;
+	canView?: boolean;
 }
 
 export function TaskMenu({
@@ -18,68 +33,129 @@ export function TaskMenu({
 	openDialog,
 	canEdit = true,
 	canDelete = true,
+	canView = true,
 }: TaskMenuProps) {
+	const { updateTask } = useTaskStore();
+
+	const toggleCompletion = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (!canEdit) return;
+
+		await updateTask(task.id, {
+			status:
+				task.status === TaskStatus.COMPLETED
+					? TaskStatus.PENDING
+					: TaskStatus.COMPLETED,
+		});
+	};
+
 	return (
-		<Menu as="div" className="relative">
-			<MenuButton className="p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 text-gray-500 transition-colors duration-150 hover:cursor-pointer">
-				<HiOutlineDotsVertical className="w-5 h-5" />
-			</MenuButton>
+		<div className="relative inline-block text-left">
+			<Menu>
+				<MenuButton
+					onClick={(e) => e.stopPropagation()}
+					className="inline-flex justify-center p-2 text-gray-500 rounded-md hover:bg-gray-100 focus:outline-none hover:cursor-pointer"
+				>
+					<HiDotsVertical className="h-5 w-5" aria-hidden="true" />
+				</MenuButton>
 
-			<MenuItems
-				transition
-				anchor="bottom end"
-				className="w-52 origin-top-right rounded-lg border border-gray-200 bg-white p-1 text-sm shadow-lg focus:outline-none data-closed:scale-95 data-closed:opacity-0"
-			>
-				{canEdit && (
-					<MenuItem>
-						<button
-							onClick={() => openDialog('edit', task.id)}
-							className="group flex w-full items-center gap-2 rounded-md px-3 py-2 data-focus:bg-gray-100"
-						>
-							<FiEdit className="w-4 h-4 text-gray-500" />
-							Editar
-						</button>
-					</MenuItem>
-				)}
+				<Transition
+					as={Fragment}
+					enter="transition ease-out duration-100"
+					enterFrom="transform opacity-0 scale-95"
+					enterTo="transform opacity-100 scale-100"
+					leave="transition ease-in duration-75"
+					leaveFrom="transform opacity-100 scale-100"
+					leaveTo="transform opacity-0 scale-95"
+				>
+					<MenuItems className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+						<div className="p-1">
+							{canView && (
+								<MenuItem>
+									{({ active }) => (
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												openDialog('view', task.id);
+											}}
+											className={`${
+												active ? 'bg-gray-100' : ''
+											} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
+										>
+											<HiEye className="h-5 w-5 text-gray-500" />
+											Ver detalles
+										</button>
+									)}
+								</MenuItem>
+							)}
 
-				<MenuItem>
-					<button
-						onClick={() =>
-							openDialog('state', task.id, {
-								completed: task.completed,
-							})
-						}
-						className="group flex w-full items-center gap-2 rounded-md px-3 py-2 data-focus:bg-gray-100 text-left"
-					>
-						{task.completed ? (
-							<>
-								<FiXCircle className="h-4 text-gray-500" />
-								Marcar como pendiente
-							</>
-						) : (
-							<>
-								<FiCheckCircle className="h-4 text-gray-500" />
-								Marcar como completada
-							</>
-						)}
-					</button>
-				</MenuItem>
+							{canEdit && (
+								<>
+									<MenuItem>
+										{({ active }) => (
+											<button
+												onClick={(e) => {
+													e.stopPropagation();
+													openDialog('edit', task.id);
+												}}
+												className={`${
+													active ? 'bg-gray-100' : ''
+												} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
+											>
+												<HiPencil className="h-5 w-5 text-gray-500" />
+												Editar
+											</button>
+										)}
+									</MenuItem>
 
-				{canDelete && (
-					<>
-						<div className="my-1 h-px bg-gray-200" />
-						<MenuItem>
-							<button
-								onClick={() => openDialog('delete', task.id)}
-								className="group flex w-full items-center gap-2 rounded-md px-3 py-2 text-red-600 data-focus:bg-red-50"
-							>
-								<FiTrash2 className="w-4 h-4" />
-								Eliminar
-							</button>
-						</MenuItem>
-					</>
-				)}
-			</MenuItems>
-		</Menu>
+									<MenuItem>
+										{({ active }) => (
+											<button
+												onClick={toggleCompletion}
+												className={`${
+													active ? 'bg-gray-100' : ''
+												} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
+											>
+												{task.status ===
+												TaskStatus.COMPLETED ? (
+													<>
+														<HiX className="h-5 w-5 text-gray-500" />
+														Marcar como pendiente
+													</>
+												) : (
+													<>
+														<HiCheck className="h-5 w-5 text-gray-500" />
+														Marcar como completada
+													</>
+												)}
+											</button>
+										)}
+									</MenuItem>
+								</>
+							)}
+
+							{canDelete && (
+								<MenuItem>
+									{({ active }) => (
+										<button
+											onClick={(e) => {
+												e.stopPropagation();
+												openDialog('delete', task.id);
+											}}
+											className={`${
+												active ? 'bg-gray-100' : ''
+											} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
+										>
+											<HiTrash className="h-5 w-5 text-gray-500" />
+											Eliminar
+										</button>
+									)}
+								</MenuItem>
+							)}
+						</div>
+					</MenuItems>
+				</Transition>
+			</Menu>
+		</div>
 	);
 }

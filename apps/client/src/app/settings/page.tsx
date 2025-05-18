@@ -1,4 +1,30 @@
+import {
+	HiOutlineUser,
+	HiOutlineMail,
+	HiOutlineIdentification,
+	HiOutlineShieldCheck,
+	HiOutlineKey,
+} from 'react-icons/hi';
 import { useUserStore } from '../../stores/user.store';
+import { IconType } from 'react-icons/lib';
+
+const InfoCard = ({
+	icon: Icon,
+	label,
+	value,
+}: {
+	icon: IconType;
+	label: string;
+	value: React.ReactNode;
+}) => (
+	<div className="flex items-center gap-3 bg-gray-50 border border-gray-200 rounded-xl p-4 min-w-[250px] flex-1">
+		<Icon className="w-5 h-5 text-gray-500" />
+		<div className="flex flex-col">
+			<span className="font-semibold text-gray-600">{label}</span>
+			<span className="text-gray-800 break-all">{value}</span>
+		</div>
+	</div>
+);
 
 export default function UserConfigPage() {
 	const user = useUserStore((state) => state.user);
@@ -8,41 +34,66 @@ export default function UserConfigPage() {
 	}
 
 	return (
-		<div className="p-6 max-w-3xl mx-auto bg-white shadow rounded-lg space-y-4">
-			<h1 className="text-2xl font-bold text-gray-800">
-				Configuración del Usuario
-			</h1>
+		<div className="max-w-3xl mx-auto mt-6 px-4">
+			<div className="bg-white border border-gray-200 rounded-2xl shadow p-6 space-y-6">
+				<h1 className="text-2xl font-semibold text-gray-800 flex items-center gap-2">
+					<HiOutlineUser className="w-6 h-6 text-gray-600" />
+					Configuración del Usuario
+				</h1>
 
-			<div className="space-y-2">
-				<div>
-					<span className="font-semibold text-gray-700">Nombre:</span>{' '}
-					{user.name}
+				{/* Info Cards */}
+				<div className="flex flex-wrap gap-4 text-sm text-gray-700">
+					<InfoCard
+						icon={HiOutlineUser}
+						label="Nombre"
+						value={user.name}
+					/>
+					<InfoCard
+						icon={HiOutlineMail}
+						label="Email"
+						value={user.email}
+					/>
+					<InfoCard
+						icon={HiOutlineIdentification}
+						label="ID"
+						value={user.id}
+					/>
 				</div>
-				<div>
-					<span className="font-semibold text-gray-700">Email:</span>{' '}
-					{user.email}
-				</div>
-				<div>
-					<span className="font-semibold text-gray-700">ID:</span>{' '}
-					{user.id}
-				</div>
-				<div>
-					<span className="font-semibold text-gray-700">Roles:</span>
-					<ul className="list-disc list-inside ml-4 text-sm text-gray-700">
+
+				{/* Roles */}
+				<div className="flex flex-col gap-2 text-sm text-gray-700">
+					<div className="flex items-center gap-2">
+						<HiOutlineShieldCheck className="w-5 h-5 text-gray-500" />
+						<span className="font-semibold">Roles:</span>
+					</div>
+					<div className="flex flex-wrap gap-2 ml-7">
 						{user.roles.map((role) => (
-							<li key={role}>{role}</li>
+							<span
+								key={role}
+								className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 text-xs border border-gray-300"
+							>
+								{role}
+							</span>
 						))}
-					</ul>
+					</div>
 				</div>
-				<div>
-					<span className="font-semibold text-gray-700">
-						Permisos:
-					</span>
-					<ul className="grid grid-cols-2 gap-1 list-disc list-inside ml-4 text-sm text-gray-700">
+
+				{/* Permisos */}
+				<div className="flex flex-col gap-2 text-sm text-gray-700">
+					<div className="flex items-center gap-2">
+						<HiOutlineKey className="w-5 h-5 text-gray-500" />
+						<span className="font-semibold">Permisos:</span>
+					</div>
+					<div className="flex flex-wrap gap-2 ml-7">
 						{user.permissions.map((perm) => (
-							<li key={perm}>{perm}</li>
+							<span
+								key={perm}
+								className="text-xs px-2 py-1 bg-gray-50 border border-gray-200 rounded"
+							>
+								{perm}
+							</span>
 						))}
-					</ul>
+					</div>
 				</div>
 			</div>
 		</div>

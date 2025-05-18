@@ -7,6 +7,6 @@
 		"emitDecoratorMetadata": true,
 		"target": "es2021"
 	},
-	"include": ["src/**/*.ts"],
-	"exclude": ["jest.config.ts", "src/**/*.spec.ts", "src/**/*.test.ts"]
+	"include": ["src/**/*.ts", "tests/unit/auth/mock.spec.ts"],
+	"exclude": ["jest.config.ts", "tests/**/*.spec.ts", "tests/**/*.test.ts"]
 }

@@ -12,14 +12,20 @@ import {
 	arrayMove,
 } from '@dnd-kit/sortable';
 import { TaskSortableItem } from './task.item';
+import type { Task } from '../../../types/tasks.interface';
 
 interface TaskListProps {
-	ordered: any[];
+	ordered: Task[];
 	order: string[];
 	setOrder: (order: string[]) => void;
-	openDialog: (mode: 'create' | 'edit' | 'delete', id?: string) => void;
+	openDialog: (
+		mode: 'create' | 'edit' | 'delete' | 'view',
+		id?: string
+	) => void;
 	canEdit?: boolean;
 	canDelete?: boolean;
+	canView?: boolean;
+	isDraggable?: boolean;
 }
 
 export function TaskList({
@@ -28,21 +34,50 @@ export function TaskList({
 	setOrder,
 	openDialog,
 	canEdit = true,
-	canDelete = true
+	canDelete = true,
+	canView = true,
+	isDraggable = true,
 }: TaskListProps) {
 	const sensors = useSensors(
-		useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+		useSensor(PointerSensor, {
+			activationConstraint: { distance: 5 },
+		})
 	);
 
 	const onDragEnd = (event: DragEndEvent) => {
 		const { active, over } = event;
 		if (!over || active.id === over.id) return;
+
 		const oldIndex = order.indexOf(active.id as string);
 		const newIndex = order.indexOf(over.id as string);
-		const newOrder = arrayMove(order, oldIndex, newIndex);
-		setOrder(newOrder);
+
+		if (oldIndex !== -1 && newIndex !== -1) {
+			const newOrder = arrayMove(order, oldIndex, newIndex);
+			setOrder(newOrder);
+		}
 	};
 
+	// If drag and drop is disabled, render a simple list
+	if (!isDraggable) {
+		return (
+			<div className="space-y-4">
+				{ordered.map((task, i) => (
+					<TaskSortableItem
+						key={task.id}
+						task={task}
+						index={i}
+						openDialog={openDialog}
+						canEdit={canEdit}
+						canDelete={canDelete}
+						canView={canView}
+						isDraggable={false}
+					/>
+				))}
+			</div>
+		);
+	}
+
+	// Otherwise render the sortable list with drag and drop
 	return (
 		<DndContext
 			sensors={sensors}
@@ -54,7 +89,7 @@ export function TaskList({
 				strategy={verticalListSortingStrategy}
 			>
 				<div className="space-y-4">
-					{ordered.map((task: any, i: number) => (
+					{ordered.map((task, i) => (
 						<TaskSortableItem
 							key={task.id}
 							task={task}
@@ -62,6 +97,8 @@ export function TaskList({
 							openDialog={openDialog}
 							canEdit={canEdit}
 							canDelete={canDelete}
+							canView={canView}
+							isDraggable={true}
 						/>
 					))}
 				</div>
@@ -69,4 +106,3 @@ export function TaskList({
 		</DndContext>
 	);
 }
-

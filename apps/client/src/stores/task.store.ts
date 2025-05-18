@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { Task, CreateTaskDto, UpdateTaskDto } from '../types/tasks.interface';
-import { taskService } from '../services/task.service';
 import { toast } from 'sonner';
+import { taskService } from '../services/task.service';
 
 interface TaskState {
 	tasks: Task[];
@@ -10,6 +10,7 @@ interface TaskState {
 	error: string | null;
 	searchTerm: string;
 	filteredTasks: Task[];
+	isAdminMode: boolean;
 
 	fetchTasks: () => Promise<void>;
 	selectTask: (task: Task | null) => void;
@@ -18,7 +19,11 @@ interface TaskState {
 	updateTask: (id: string, data: UpdateTaskDto) => Promise<void>;
 	deleteTask: (id: string) => Promise<void>;
 	setSearchTerm: (term: string) => void;
-	fetchAdminTasks: () => Promise<void>; // Added fetchAdminTasks
+	setAdminMode: (isAdmin: boolean) => void;
+	fetchAdminTasks: () => Promise<void>;
+	fetchTaskByIdAdmin: (id: string) => Promise<void>;
+	updateTaskAdmin: (id: string, data: UpdateTaskDto) => Promise<void>;
+	deleteTaskAdmin: (id: string) => Promise<void>;
 }
 
 export const useTaskStore = create<TaskState>((set, get) => ({
@@ -28,6 +33,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 	error: null,
 	searchTerm: '',
 	filteredTasks: [],
+	isAdminMode: false,
 
 	fetchTasks: async () => {
 		set({ loadingFetch: true, error: null });
@@ -36,6 +42,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 			set({ tasks, filteredTasks: tasks });
 		} catch (err: any) {
 			set({ error: err.message });
+			toast.error(`Error al cargar tareas: ${err.message}`);
 		} finally {
 			set({ loadingFetch: false });
 		}
@@ -46,27 +53,25 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 	fetchTaskById: async (id) => {
 		set({ loadingFetch: true, error: null });
 		try {
-			const task = await taskService.getById(id);
+			const task = await taskService.getById(id, get().isAdminMode);
 			set({ selectedTask: task });
 		} catch (err: any) {
 			set({ error: err.message });
+			toast.error(`Error al cargar tarea: ${err.message}`);
 		} finally {
 			set({ loadingFetch: false });
 		}
 	},
 
 	createTask: async (data) => {
-		// Optimistic update
 		const tempId = `temp-${Date.now()}`;
 		const optimisticTask: Task = { ...data, id: tempId } as Task;
 		const prevTasks = get().tasks;
 		const prevFiltered = get().filteredTasks;
 		const { searchTerm } = get();
 
-		// Actualizar tasks
 		set({ tasks: [...prevTasks, optimisticTask] });
 
-		// Actualizar filteredTasks si la nueva tarea cumple con el criterio de búsqueda
 		if (
 			!searchTerm.trim() ||
 			data.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -81,13 +86,11 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 		const promise = taskService
 			.create(data)
 			.then((newTask) => {
-				// Actualizar la tarea en el array de tareas
 				const updatedTasks = get().tasks.map((t) =>
 					t.id === tempId ? newTask : t
 				);
 				set({ tasks: updatedTasks });
 
-				// Actualizar también en filteredTasks si existe
 				if (get().filteredTasks.some((t) => t.id === tempId)) {
 					set({
 						filteredTasks: get().filteredTasks.map((t) =>
@@ -108,7 +111,8 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
 		toast.promise(promise, {
 			loading: 'Agregando tarea...',
-			success: (data) => `${data.title} ha sido agregada correctamente.`,
+			success: (data: Task) =>
+				`${data.title} ha sido agregada correctamente.`,
 			error: 'No se pudo agregar la tarea.',
 		});
 	},
@@ -117,18 +121,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 		const prevTasks = get().tasks;
 		const prevFiltered = get().filteredTasks;
 		const prevSelected = get().selectedTask;
-		const { searchTerm } = get();
+		const { searchTerm, isAdminMode } = get();
+		const existingTask = prevTasks.find((t) => t.id === id);
+		if (!existingTask) return;
+
 		const updatedTask = {
-			...prevTasks.find((t) => t.id === id),
+			...existingTask,
 			...data,
 		} as Task;
 
-		// Optimistic update para tasks
 		set({
 			tasks: prevTasks.map((t) => (t.id === id ? updatedTask : t)),
 		});
 
-		// Actualizar filteredTasks
 		const taskInFiltered = prevFiltered.some((t) => t.id === id);
 		const matchesSearch =
 			!searchTerm.trim() ||
@@ -141,38 +146,32 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 				false);
 
 		if (taskInFiltered && matchesSearch) {
-			// La tarea estaba en filtrados y sigue cumpliendo el criterio
 			set({
 				filteredTasks: prevFiltered.map((t) =>
 					t.id === id ? updatedTask : t
 				),
 			});
 		} else if (taskInFiltered && !matchesSearch) {
-			// La tarea estaba en filtrados pero ya no cumple el criterio
 			set({
 				filteredTasks: prevFiltered.filter((t) => t.id !== id),
 			});
 		} else if (!taskInFiltered && matchesSearch) {
-			// La tarea no estaba en filtrados pero ahora cumple el criterio
 			set({
 				filteredTasks: [...prevFiltered, updatedTask],
 			});
 		}
 
-		// Actualizar selectedTask si es necesario
 		if (prevSelected?.id === id) {
 			set({ selectedTask: updatedTask });
 		}
 
 		const promise = taskService
-			.update(id, data)
+			.update(id, data, isAdminMode)
 			.then((updated) => {
-				// Actualizar en tasks
 				set({
 					tasks: get().tasks.map((t) => (t.id === id ? updated : t)),
 				});
 
-				// Actualizar en filteredTasks si es necesario
 				if (get().filteredTasks.some((t) => t.id === id)) {
 					set({
 						filteredTasks: get().filteredTasks.map((t) =>
@@ -181,7 +180,6 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 					});
 				}
 
-				// Actualizar selectedTask si es necesario
 				if (get().selectedTask?.id === id) {
 					set({ selectedTask: updated });
 				}
@@ -199,7 +197,7 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 
 		toast.promise(promise, {
 			loading: 'Actualizando tarea...',
-			success: (data) => `${data.title} ha sido actualizada.`,
+			success: (data: Task) => `${data.title} ha sido actualizada.`,
 			error: 'No se pudo actualizar la tarea.',
 		});
 	},
@@ -208,18 +206,19 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 		const prevTasks = get().tasks;
 		const prevFiltered = get().filteredTasks;
 		const prevSelected = get().selectedTask;
+		const { isAdminMode } = get();
 
-		// Optimistic update
 		set({
 			tasks: prevTasks.filter((t) => t.id !== id),
 			filteredTasks: prevFiltered.filter((t) => t.id !== id),
 		});
+
 		if (prevSelected?.id === id) {
 			set({ selectedTask: null });
 		}
 
 		const promise = taskService
-			.remove(id)
+			.remove(id, isAdminMode)
 			.then(() => {
 				return { id };
 			})
@@ -260,16 +259,65 @@ export const useTaskStore = create<TaskState>((set, get) => ({
 		set({ filteredTasks: filtered });
 	},
 
+	setAdminMode: (isAdmin) => {
+		set({ isAdminMode: isAdmin });
+		if (isAdmin) {
+			get().fetchAdminTasks();
+		} else {
+			get().fetchTasks();
+		}
+	},
+
 	fetchAdminTasks: async () => {
-		// Added fetchAdminTasks
 		set({ loadingFetch: true, error: null });
 		try {
 			const tasks = await taskService.getAllAdmin();
 			set({ tasks, filteredTasks: tasks });
 		} catch (err: any) {
 			set({ error: err.message });
+			toast.error(
+				`Error al cargar tareas de administrador: ${err.message}`
+			);
 		} finally {
 			set({ loadingFetch: false });
 		}
 	},
+
+	fetchTaskByIdAdmin: async (id) => {
+		set({ loadingFetch: true, error: null });
+		try {
+			const task = await taskService.getById(id, true);
+			set({ selectedTask: task });
+		} catch (err: any) {
+			set({ error: err.message });
+			toast.error(
+				`Error al cargar tarea de administrador: ${err.message}`
+			);
+		} finally {
+			set({ loadingFetch: false });
+		}
+	},
+
+	updateTaskAdmin: async (id, data) => {
+		const prevIsAdminMode = get().isAdminMode;
+		set({ isAdminMode: true });
+		await get().updateTask(id, data);
+		set({ isAdminMode: prevIsAdminMode });
+	},
+
+	deleteTaskAdmin: async (id) => {
+		const prevIsAdminMode = get().isAdminMode;
+		set({ isAdminMode: true });
+		await get().deleteTask(id);
+		set({ isAdminMode: prevIsAdminMode });
+	},
 }));
+
+// Exportación de los selectores y acciones para uso en componentes
+export const selectTasks = (state: TaskState) => state.tasks;
+export const selectFilteredTasks = (state: TaskState) => state.filteredTasks;
+export const selectSelectedTask = (state: TaskState) => state.selectedTask;
+export const selectIsLoading = (state: TaskState) => state.loadingFetch;
+export const selectError = (state: TaskState) => state.error;
+export const selectSearchTerm = (state: TaskState) => state.searchTerm;
+export const selectIsAdminMode = (state: TaskState) => state.isAdminMode;
