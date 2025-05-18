@@ -4,6 +4,7 @@ import CallbackPage from '../auth/callback/page';
 import LandingPage from '../landing/index/page';
 import UserConfigPage from '../config/page';
 import TasksPage from '../tasks/page';
+import AuthGuard from '../components/AuthGuard';
 
 interface RouteConfig {
 	path: string;
@@ -25,11 +26,15 @@ export const routes: RouteConfig[] = [
 	},
 	{
 		path: '/config',
-		element: <UserConfigPage />,
+		element: <AuthGuard>
+			<UserConfigPage />
+		</AuthGuard>,
 	},
     {
         path: '/dashboard',
-        element: <TasksPage />,
+        element: <AuthGuard>
+			<TasksPage />
+		</AuthGuard>,
     },
 	{
 		path: '/auth/login/callback',
