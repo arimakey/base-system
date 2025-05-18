@@ -44,7 +44,7 @@ export class AuthController {
 		// Return user data with permissions
 		return {
 			...req.user,
-			permissions: userPermissions
+			permissions: userPermissions,
 		};
 	}
 
@@ -65,27 +65,38 @@ export class AuthController {
 	@UseGuards(JwtRefreshGuard)
 	async refreshToken(@Req() req, @Res({ passthrough: true }) res: Response) {
 		try {
-			const refreshToken = req.cookies.refresh_token;
+			console.log('[Auth] Intentando refrescar el token...');
+
+			const refreshToken = req.cookies['refresh_token'];
 
 			if (!refreshToken) {
-				throw new UnauthorizedException('Refresh token not found');
+				console.log(
+					'[Auth] No se encontró el refresh token en las cookies'
+				);
+				throw new UnauthorizedException(
+					'Refresh token not found in cookies'
+				);
 			}
+
+			console.log('[Auth] Refresh token recibido:', refreshToken);
 
 			const { accessToken, refreshToken: newRefreshToken } =
 				await this.authService.handleRefresh(refreshToken);
 
-			// Configurar la cookie con el nuevo refresh token
+			console.log('[Auth] Tokens generados correctamente');
+
 			res.cookie('refresh_token', newRefreshToken, {
 				httpOnly: true,
-				secure: true,
-				sameSite: 'strict',
-				domain: this.config.get('COOKIE_DOMAIN'),
-				maxAge: 7 * 24 * 60 * 60 * 1000, // 7 días
+				secure: process.env.NODE_ENV === 'production',
+				sameSite: 'lax',
+				maxAge: 7 * 24 * 60 * 60 * 1000,
 			});
+
+			console.log('[Auth] Nuevo refresh token enviado en cookie');
 
 			return { accessToken };
 		} catch (error) {
-			console.error('Refresh failed:', error);
+			console.log('[Auth] Error al refrescar el token:', error);
 			res.clearCookie('refresh_token');
 			throw new UnauthorizedException('Invalid refresh token');
 		}
@@ -122,11 +133,15 @@ export class AuthController {
 			console.log('Generated access token:', accessToken);
 
 			const frontendUrl = this.config.get('FRONTEND_URL');
-			res.redirect(`${frontendUrl}/auth/login/callback?token=${accessToken}`);
+			res.redirect(
+				`${frontendUrl}/auth/login/callback?token=${accessToken}`
+			);
 		} catch (error) {
 			const frontendUrl = this.config.get('FRONTEND_URL');
 			console.error('Google auth failed', error);
-			res.redirect(`${frontendUrl}/auth/login/callback?error=auth_failed`);
+			res.redirect(
+				`${frontendUrl}/auth/login/callback?error=auth_failed`
+			);
 		}
 	}
 }
