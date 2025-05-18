@@ -7,6 +7,7 @@ import { TaskList } from './records/task.list';
 import { TaskSortableSkeleton } from './records/task.skeleton';
 import { Button } from '../components/Button';
 import { TaskDialogRouter } from './dialogs/task.dialog';
+import SearchBar from '../components/SearchBar';
 
 const schema = z.object({
 	title: z.string().min(1, 'Título es obligatorio'),
@@ -17,12 +18,14 @@ type FormData = z.infer<typeof schema>;
 export default function GestorTareas() {
 	const {
 		tasks,
+		filteredTasks,
 		fetchTasks,
 		createTask,
 		updateTask,
 		deleteTask,
 		loadingFetch,
 		error,
+		setSearchTerm,
 	} = useTaskStore();
 	const {
 		register,
@@ -42,7 +45,7 @@ export default function GestorTareas() {
 	useEffect(() => {
 		fetchTasks();
 	}, [fetchTasks]);
-	useEffect(() => setOrder(tasks.map((t) => t.id)), [tasks]);
+	useEffect(() => setOrder(filteredTasks.map((t) => t.id)), [filteredTasks]);
 	useEffect(() => {
 		if (isOpen && (dialogMode === 'edit' || dialogMode === 'create')) {
 			setTimeout(() => setFocus('title'), 100);
@@ -66,7 +69,11 @@ export default function GestorTareas() {
 	const onSubmit = async (data: FormData) => {
 		if (dialogMode === 'edit' && currentId)
 			await updateTask(currentId, data);
-		if (dialogMode === 'create') await createTask(data);
+		if (dialogMode === 'create')
+			await createTask({
+				title: data.title,
+				description: data.description,
+			});
 		closeDialog();
 	};
 
@@ -75,8 +82,9 @@ export default function GestorTareas() {
 		closeDialog();
 	};
 
+	// Ordenar las tareas filtradas según el orden establecido
 	const ordered = order
-		.map((id) => tasks.find((t) => t.id === id))
+		.map((id) => filteredTasks.find((t) => t.id === id))
 		.filter(Boolean) as typeof tasks;
 
 	return (
@@ -89,7 +97,16 @@ export default function GestorTareas() {
 					Error: {error}
 				</div>
 			)}
-			<Button onClick={() => openDialog('create')}>Nueva Tarea</Button>
+			<div className="flex flex-col sm:flex-row gap-4 mb-4">
+				<SearchBar
+					onSearch={setSearchTerm}
+					placeholder="Buscar por título o descripción..."
+					className="flex-grow"
+				/>
+				<Button onClick={() => openDialog('create')}>
+					Nueva Tarea
+				</Button>
+			</div>
 			{loadingFetch ? (
 				<div className="space-y-4">
 					{Array.from({ length: 4 }).map((_, i) => (
