@@ -18,10 +18,6 @@ interface TaskListProps {
 	ordered: Task[];
 	order: string[];
 	setOrder: (order: string[]) => void;
-	openDialog: (
-		mode: 'create' | 'edit' | 'delete' | 'view',
-		id?: string
-	) => void;
 	canEdit?: boolean;
 	canDelete?: boolean;
 	canView?: boolean;
@@ -32,7 +28,6 @@ export function TaskList({
 	ordered,
 	order,
 	setOrder,
-	openDialog,
 	canEdit = true,
 	canDelete = true,
 	canView = true,
@@ -66,7 +61,6 @@ export function TaskList({
 						key={task.id}
 						task={task}
 						index={i}
-						openDialog={openDialog}
 						canEdit={canEdit}
 						canDelete={canDelete}
 						canView={canView}
@@ -94,7 +88,6 @@ export function TaskList({
 							key={task.id}
 							task={task}
 							index={i}
-							openDialog={openDialog}
 							canEdit={canEdit}
 							canDelete={canDelete}
 							canView={canView}

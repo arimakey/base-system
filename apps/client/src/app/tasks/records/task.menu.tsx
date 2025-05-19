@@ -15,14 +15,11 @@ import {
 } from 'react-icons/hi';
 import { Fragment } from 'react';
 import { useTaskStore } from '../../../stores/task.store';
+import { useDialogStore } from '../../../stores/dialog.store';
 import { Task, TaskStatus } from '../../../types/tasks.interface';
 
 interface TaskMenuProps {
 	task: Task;
-	openDialog: (
-		mode: 'create' | 'edit' | 'delete' | 'view',
-		id?: string
-	) => void;
 	canEdit?: boolean;
 	canDelete?: boolean;
 	canView?: boolean;
@@ -30,12 +27,12 @@ interface TaskMenuProps {
 
 export function TaskMenu({
 	task,
-	openDialog,
 	canEdit = true,
 	canDelete = true,
 	canView = true,
 }: TaskMenuProps) {
 	const { updateTask } = useTaskStore();
+	const { openDialog } = useDialogStore();
 
 	const toggleCompletion = async (e: React.MouseEvent) => {
 		e.stopPropagation();
@@ -76,7 +73,7 @@ export function TaskMenu({
 										<button
 											onClick={(e) => {
 												e.stopPropagation();
-												openDialog('view', task.id);
+												openDialog('view', task);
 											}}
 											className={`${
 												active ? 'bg-gray-100' : ''
@@ -96,7 +93,7 @@ export function TaskMenu({
 											<button
 												onClick={(e) => {
 													e.stopPropagation();
-													openDialog('edit', task.id);
+													openDialog('edit', task);
 												}}
 												className={`${
 													active ? 'bg-gray-100' : ''
@@ -140,7 +137,7 @@ export function TaskMenu({
 										<button
 											onClick={(e) => {
 												e.stopPropagation();
-												openDialog('delete', task.id);
+												openDialog('delete', task);
 											}}
 											className={`${
 												active ? 'bg-gray-100' : ''

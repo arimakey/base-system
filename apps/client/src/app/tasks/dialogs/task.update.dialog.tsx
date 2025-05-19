@@ -5,8 +5,10 @@ import {
 	Description,
 } from '@headlessui/react';
 import { Button } from '../../components/Button';
+import { useDialogStore } from '../../../stores/dialog.store';
 
-export function ChangeStateDialog({ isOpen, closeDialog, onChangeState }: any) {
+export function ChangeStateDialog({ onChangeState }: any) {
+	const { isOpen, closeDialog } = useDialogStore();
 	return (
 		<Dialog
 			open={isOpen}

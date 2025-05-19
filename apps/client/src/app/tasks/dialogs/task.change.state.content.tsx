@@ -1,12 +1,12 @@
 import { Button } from '../../components/Button';
 import { useDialogStore } from '../../../stores/dialog.store';
 
-export function TaskDeleteContent() {
+export function TaskChangeStateContent() {
 	const { closeDialog, currentTask } = useDialogStore();
 
-	const confirmDelete = () => {
-		// Delete task logic here
-		console.log('Deleting task:', currentTask?.id);
+	const onChangeState = () => {
+		// Change state logic here
+		console.log('Changing state for task:', currentTask?.id);
 		closeDialog();
 	};
 
@@ -15,12 +15,8 @@ export function TaskDeleteContent() {
 			<Button onClick={closeDialog} variant="secondary">
 				Cancelar
 			</Button>
-			<Button
-				onClick={confirmDelete}
-				variant="primary"
-				className="bg-red-600 hover:bg-red-700 text-white"
-			>
-				Eliminar
+			<Button onClick={onChangeState} variant="primary">
+				Cambiar
 			</Button>
 		</div>
 	);

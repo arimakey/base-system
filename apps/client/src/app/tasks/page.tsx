@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTaskStore } from '../../stores/task.store';
 import { TaskSortableSkeleton } from './records/task.skeleton';
 import { Button } from '../components/Button';
-import { TaskDialogRouter } from './dialogs/task.dialog';
+import { TaskDialogWrapper } from './dialogs/task.dialog.wrapper';
 import SearchBar from '../components/SearchBar';
 import { useUserStore } from '../../stores/user.store';
 import { Permission } from '../../types/permission.enum';
@@ -214,24 +214,13 @@ export default function TasksPage({ isAdmin = false }: TasksPageProps) {
 					ordered={ordered}
 					order={order}
 					setOrder={setOrder}
-					openDialog={openDialog}
 					canEdit={canEdit}
 					canDelete={canDelete}
 					canView={canView}
 				/>
 			)}
 
-			<TaskDialogRouter
-				isOpen={isOpen}
-				closeDialog={closeDialog}
-				dialogMode={dialogMode}
-				errors={errors}
-				register={register}
-				handleSubmit={handleSubmit}
-				onSubmit={onSubmit}
-				confirmDelete={confirmDelete}
-				selectedTask={selectedTask}
-			/>
+			<TaskDialogWrapper />
 		</div>
 	);
 }

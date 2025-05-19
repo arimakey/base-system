@@ -9,13 +9,10 @@ import {
 import { getPriorityColor } from '../../../utils/priority';
 import { getDueStatus } from '../../../utils/dates';
 import { TaskMenu } from './task.menu';
+import { useDialogStore } from '../../../stores/dialog.store';
 
 interface TaskSortableItemProps {
 	task: any;
-	openDialog: (
-		mode: 'create' | 'edit' | 'delete' | 'view',
-		id?: string
-	) => void;
 	index: number;
 	canEdit?: boolean;
 	canDelete?: boolean;
@@ -25,7 +22,6 @@ interface TaskSortableItemProps {
 
 export function TaskSortableItem({
 	task,
-	openDialog,
 	index,
 	canEdit = true,
 	canDelete = true,
@@ -54,9 +50,11 @@ export function TaskSortableItem({
 	const priorityClass = getPriorityColor(task.priority);
 	const completedClass = task.completed ? 'border-l-4 border-green-500' : '';
 
+	const { openDialog } = useDialogStore();
+
 	const handleTaskClick = () => {
-		if (canView) {
-			openDialog('view', task.id);
+		if (canView && task) {
+			openDialog('view', task);
 		}
 	};
 
@@ -147,7 +145,6 @@ export function TaskSortableItem({
 
 				<TaskMenu
 					task={task}
-					openDialog={openDialog}
 					canEdit={canEdit}
 					canDelete={canDelete}
 					canView={canView}
