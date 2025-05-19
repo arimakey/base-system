@@ -1,8 +1,8 @@
 import { Permission } from "./permission.enum";
 
-export interface SideItem {
+export interface NavItem {
 	path: string;
 	label: string;
-	icon: string;
+	icon: React.ReactNode;
 	requiredPermission?: Permission;
 }

@@ -1,56 +1,9 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../stores/user.store';
-import { Permission } from '../../types/permission.enum';
 import { useAuth } from '../hooks/useAuth';
-
-import {
-	HiOutlineChartBar,
-	HiOutlineClipboardList,
-	HiOutlineDocumentText,
-	HiOutlineCog,
-	HiOutlineUsers,
-	HiOutlineLogout,
-} from 'react-icons/hi';
-
-interface NavItem {
-	path: string;
-	label: string;
-	icon: React.ReactNode;
-	requiredPermission?: Permission;
-}
-
-const navItems: NavItem[] = [
-	{
-		path: '/dashboard',
-		label: 'Dashboard',
-		icon: <HiOutlineChartBar className="w-5 h-5" />,
-	},
-	{
-		path: '/tasks',
-		label: 'Mis Tareas',
-		icon: <HiOutlineDocumentText className="w-5 h-5" />,
-		requiredPermission: Permission.TASK_READ_OWN_LIST,
-	},
-	{
-		path: '/admin/tasks',
-		label: 'Todas las Tareas',
-		icon: <HiOutlineClipboardList className="w-5 h-5" />,
-		requiredPermission: Permission.TASK_READ_ANY_LIST,
-	},
-	{
-		path: '/settings',
-		label: 'Configuración',
-		icon: <HiOutlineCog className="w-5 h-5" />,
-		requiredPermission: Permission.SETTINGS_VIEW,
-	},
-	{
-		path: '/admin/users',
-		label: 'Usuarios',
-		icon: <HiOutlineUsers className="w-5 h-5" />,
-		requiredPermission: Permission.USER_READ_ALL,
-	},
-];
+import navItems from '../../config/side_items';
+import { HiOutlineLogout } from 'react-icons/hi';
 
 const Sidebar: React.FC = () => {
 	const { user } = useUserStore();
