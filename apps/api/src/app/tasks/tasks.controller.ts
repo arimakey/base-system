@@ -19,11 +19,40 @@ import { Permission } from '../auth/enums/permission.enum';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { User as AuthUser } from '../types/user';
 import { ApiBody, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
+import { TaskMetricsDto } from './dto/task-metrics.dto';
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard, PermissionsGuard)
 export class TasksController {
 	constructor(private readonly tasksService: TasksService) {}
+
+	@Get('metrics')
+	@ApiOperation({ summary: 'Obtener métricas de tareas del usuario actual' })
+	@ApiResponse({
+		status: 200,
+		description: 'Métricas obtenidas exitosamente',
+		type: TaskMetricsDto,
+	})
+	@ApiResponse({ status: 401, description: 'No autorizado' })
+	@RequirePermissions(Permission.TASK_READ_OWN_LIST)
+	getMetrics(@CurrentUser() user: AuthUser) {
+		console.log('Fetching metrics for user:', user.id);
+		return this.tasksService.getMetrics(user.id);
+	}
+
+	@Get('metrics/admin')
+	@ApiOperation({ summary: 'Obtener métricas de todas las tareas (admin)' })
+	@ApiResponse({
+		status: 200,
+		description: 'Métricas obtenidas exitosamente',
+		type: TaskMetricsDto,
+	})
+	@ApiResponse({ status: 401, description: 'No autorizado' })
+	@ApiResponse({ status: 403, description: 'Prohibido' })
+	@RequirePermissions(Permission.TASK_READ_ANY_LIST)
+	getMetricsAdmin() {
+		return this.tasksService.getMetricsAdmin();
+	}
 
 	@Post()
 	@ApiBody({ type: CreateTaskDto })

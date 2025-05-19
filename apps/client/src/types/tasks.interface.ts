@@ -42,3 +42,12 @@ export interface TaskState {
 	logout: () => Promise<void>;
 	saveAccessTokenFromUrl: () => Promise<void>;
 }
+
+export interface TaskMetricsDto {
+	totalTasks: number;
+	completedTasks: number;
+	pendingTasks: number;
+	tasksByDate: { date: string; count: number }[];
+	tasksByStatus: { status: string; count: number }[];
+	tasksByUser?: { user: string; count: number }[];
+}
