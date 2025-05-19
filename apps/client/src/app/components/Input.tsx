@@ -22,14 +22,13 @@ type TextAreaProps = BaseProps &
 type Props = InputProps | TextAreaProps;
 
 const baseClasses =
-	'w-full py-2 px-3 rounded-md transition-all duration-300 outline-none shadow-md focus:shadow-lg';
+	'w-full py-2 px-3 rounded-lg border transition-all duration-200 outline-none shadow-sm disabled:opacity-60 disabled:cursor-not-allowed';
 
 const variantClasses: Record<InputVariant, string> = {
-	primary: 'border border-black bg-white text-black focus:border-neutral-800',
+	primary: 'border-gray-300 bg-white text-gray-900 focus:border-black',
 	outline:
-		'border border-black bg-transparent text-black focus:bg-black focus:text-white',
-	secondary:
-		'border border-neutral-200 bg-neutral-100 text-black focus:border-neutral-400',
+		'border-black bg-transparent text-gray-900 focus:bg-gray-100 focus:border-black',
+	secondary: 'border-gray-200 bg-gray-100 text-gray-700 focus:border-black',
 };
 
 const Input: React.FC<Props> = ({

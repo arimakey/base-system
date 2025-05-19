@@ -2,13 +2,21 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useUserStore } from '../../stores/user.store';
 import { Permission } from '../../types/permission.enum';
-import { useAuth } from '../hooks/useAuth'; // Importar el hook useAuth
+import { useAuth } from '../hooks/useAuth';
 
-// Define navigation items with required permissions
+import {
+	HiOutlineChartBar,
+	HiOutlineClipboardList,
+	HiOutlineDocumentText,
+	HiOutlineCog,
+	HiOutlineUsers,
+	HiOutlineLogout,
+} from 'react-icons/hi';
+
 interface NavItem {
 	path: string;
 	label: string;
-	icon: string;
+	icon: React.ReactNode;
 	requiredPermission?: Permission;
 }
 
@@ -16,88 +24,95 @@ const navItems: NavItem[] = [
 	{
 		path: '/dashboard',
 		label: 'Dashboard',
-		icon: '📊',
+		icon: <HiOutlineChartBar className="w-5 h-5" />,
 	},
 	{
 		path: '/tasks',
-		label: 'My Tasks',
-		icon: '📝',
+		label: 'Mis Tareas',
+		icon: <HiOutlineDocumentText className="w-5 h-5" />,
 		requiredPermission: Permission.TASK_READ_OWN_LIST,
 	},
 	{
 		path: '/admin/tasks',
-		label: 'All Tasks',
-		icon: '📋',
+		label: 'Todas las Tareas',
+		icon: <HiOutlineClipboardList className="w-5 h-5" />,
 		requiredPermission: Permission.TASK_READ_ANY_LIST,
 	},
 	{
 		path: '/settings',
-		label: 'Settings',
-		icon: '⚙️',
+		label: 'Configuración',
+		icon: <HiOutlineCog className="w-5 h-5" />,
 		requiredPermission: Permission.SETTINGS_VIEW,
 	},
 	{
 		path: '/admin/users',
-		label: 'User Management',
-		icon: '👥',
+		label: 'Usuarios',
+		icon: <HiOutlineUsers className="w-5 h-5" />,
 		requiredPermission: Permission.USER_READ_ALL,
 	},
 ];
 
 const Sidebar: React.FC = () => {
 	const { user } = useUserStore();
-	const { logout } = useAuth(); // Usar el hook useAuth
+	const { logout } = useAuth();
 	const navigate = useNavigate();
 
-	if (!user || !user.permissions) {
-		return null;
-	}
+	if (!user || !user.permissions) return null;
 
 	const filteredNavItems = navItems.filter(
 		(item) =>
 			!item.requiredPermission ||
-			user.permissions?.includes(item.requiredPermission)
+			user.permissions.includes(item.requiredPermission)
 	);
 
 	const handleLogout = () => {
-		logout(); // Llamar a la funci&#243;n logout del hook useAuth
-		navigate('/auth/logout'); // Navegar a la ruta de logout
+		logout();
+		navigate('/auth/logout');
 	};
 
 	return (
-		<aside className="w-64 bg-gray-800 text-white h-screen p-4">
-			<div className="mb-6">
-				<h2 className="text-xl font-bold">App Name</h2>
-				<p className="text-gray-400 text-sm">{user.name}</p>
+		<aside className="w-64 h-screen bg-neutral-900 text-white flex flex-col justify-between p-4">
+			<div>
+				{/* Header */}
+				<div className="mb-6">
+					<h2 className="text-2xl font-bold text-white">Base App</h2>
+					<p className="text-sm text-neutral-400">{user.name}</p>
+				</div>
+
+				{/* Navigation */}
+				<nav>
+					<ul className="space-y-1">
+						{filteredNavItems.map((item) => (
+							<li key={item.path}>
+								<NavLink
+									to={item.path}
+									className={({ isActive }) =>
+										`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+											isActive
+												? 'bg-neutral-800 text-white'
+												: 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
+										}`
+									}
+								>
+									{item.icon}
+									<span className="text-sm">
+										{item.label}
+									</span>
+								</NavLink>
+							</li>
+						))}
+					</ul>
+				</nav>
 			</div>
 
-			<nav>
-				<ul className="space-y-2">
-					{filteredNavItems.map((item) => (
-						<li key={item.path}>
-							<NavLink
-								to={item.path}
-								className={({ isActive }) =>
-									`flex items-center p-2 rounded hover:bg-gray-700 transition-colors ${
-										isActive ? 'bg-gray-700' : ''
-									}`
-								}
-							>
-								<span className="mr-3">{item.icon}</span>
-								{item.label}
-							</NavLink>
-						</li>
-					))}
-				</ul>
-			</nav>
-
-			<div className="absolute bottom-4 w-52">
+			{/* Logout */}
+			<div>
 				<button
 					onClick={handleLogout}
-					className="flex items-center p-2 rounded hover:bg-gray-700 transition-colors w-full"
+					className="flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors w-full hover:cursor-pointer"
 				>
-					<span className="mr-3">🚪</span>
-					Logout
+					<HiOutlineLogout className="w-5 h-5" />
+					<span className="text-sm">Cerrar sesión</span>
 				</button>
 			</div>
 		</aside>

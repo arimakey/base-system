@@ -65,91 +65,97 @@ export function TaskMenu({
 					leaveFrom="transform opacity-100 scale-100"
 					leaveTo="transform opacity-0 scale-95"
 				>
-					<MenuItems className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-						<div className="p-1">
-							{canView && (
+					<MenuItems className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg focus:outline-none">
+						{canView && (
+							<MenuItem>
+								{({ active }) => (
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											openDialog('view', task);
+										}}
+										className={`${
+											active
+												? 'bg-gray-100 hover:cursor-pointer'
+												: ''
+										} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
+									>
+										<HiEye className="h-5 w-5 text-gray-500" />
+										Ver detalles
+									</button>
+								)}
+							</MenuItem>
+						)}
+
+						{canEdit && (
+							<>
 								<MenuItem>
 									{({ active }) => (
 										<button
 											onClick={(e) => {
 												e.stopPropagation();
-												openDialog('view', task);
+												openDialog('edit', task);
 											}}
 											className={`${
-												active ? 'bg-gray-100' : ''
+												active
+													? 'bg-gray-100 hover:cursor-pointer'
+													: ''
 											} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
 										>
-											<HiEye className="h-5 w-5 text-gray-500" />
-											Ver detalles
+											<HiPencil className="h-5 w-5 text-gray-500" />
+											Editar
 										</button>
 									)}
 								</MenuItem>
-							)}
 
-							{canEdit && (
-								<>
-									<MenuItem>
-										{({ active }) => (
-											<button
-												onClick={(e) => {
-													e.stopPropagation();
-													openDialog('edit', task);
-												}}
-												className={`${
-													active ? 'bg-gray-100' : ''
-												} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
-											>
-												<HiPencil className="h-5 w-5 text-gray-500" />
-												Editar
-											</button>
-										)}
-									</MenuItem>
-
-									<MenuItem>
-										{({ active }) => (
-											<button
-												onClick={toggleCompletion}
-												className={`${
-													active ? 'bg-gray-100' : ''
-												} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
-											>
-												{task.status ===
-												TaskStatus.COMPLETED ? (
-													<>
-														<HiX className="h-5 w-5 text-gray-500" />
-														Marcar como pendiente
-													</>
-												) : (
-													<>
-														<HiCheck className="h-5 w-5 text-gray-500" />
-														Marcar como completada
-													</>
-												)}
-											</button>
-										)}
-									</MenuItem>
-								</>
-							)}
-
-							{canDelete && (
 								<MenuItem>
 									{({ active }) => (
 										<button
-											onClick={(e) => {
-												e.stopPropagation();
-												openDialog('delete', task);
-											}}
+											onClick={toggleCompletion}
 											className={`${
-												active ? 'bg-gray-100' : ''
+												active
+													? 'bg-gray-100 hover:cursor-pointer'
+													: ''
 											} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
 										>
-											<HiTrash className="h-5 w-5 text-gray-500" />
-											Eliminar
+											{task.status ===
+											TaskStatus.COMPLETED ? (
+												<>
+													<HiX className="h-5 w-5 text-gray-500" />
+													Marcar como pendiente
+												</>
+											) : (
+												<>
+													<HiCheck className="h-5 w-5 text-gray-500" />
+													Marcar como completada
+												</>
+											)}
 										</button>
 									)}
 								</MenuItem>
-							)}
-						</div>
+							</>
+						)}
+
+						{canDelete && (
+							<MenuItem>
+								{({ active }) => (
+									<button
+										onClick={(e) => {
+											e.stopPropagation();
+											openDialog('delete', task);
+										}}
+										className={`${
+											active
+												? 'bg-gray-100 hover:cursor-pointer'
+												: ''
+										} group flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-700`}
+									>
+										<HiTrash className="h-5 w-5 text-gray-500" />
+										Eliminar
+									</button>
+								)}
+							</MenuItem>
+						)}
 					</MenuItems>
 				</Transition>
 			</Menu>
