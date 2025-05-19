@@ -2,7 +2,12 @@ import Input from '../../components/Input';
 import { Button } from '../../components/Button';
 import { useDialogStore } from '../../../stores/dialog.store';
 import { useForm } from 'react-hook-form';
-import { Task } from '../../../types/tasks.interface';
+import {
+	CreateTaskDto,
+	Task,
+	UpdateTaskDto,
+} from '../../../types/tasks.interface';
+import { useTaskStore } from '../../../stores/task.store';
 
 type TaskEditContentProps = {
 	mode: 'create' | 'edit';
@@ -10,7 +15,18 @@ type TaskEditContentProps = {
 
 export function TaskEditContent({ mode }: TaskEditContentProps) {
 	const { closeDialog, currentTask } = useDialogStore();
+	const { createTask, updateTask } = useTaskStore();
+
 	const isCreate = mode === 'create';
+
+	const onSubmit = (data: Partial<Task>) => {
+		if (isCreate) {
+			createTask(data as CreateTaskDto);
+		} else {
+			updateTask(currentTask!.id, data as UpdateTaskDto);
+		}
+		closeDialog();
+	};
 
 	const {
 		register,
@@ -19,12 +35,6 @@ export function TaskEditContent({ mode }: TaskEditContentProps) {
 	} = useForm({
 		defaultValues: isCreate ? {} : currentTask,
 	});
-
-	const onSubmit = (data: Partial<Task>) => {
-		// Handle form submission logic here
-		console.log('Form submitted:', data);
-		closeDialog();
-	};
 
 	return (
 		<form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

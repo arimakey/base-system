@@ -10,6 +10,7 @@ import SearchBar from '../components/SearchBar';
 import { useUserStore } from '../../stores/user.store';
 import { Permission } from '../../types/permission.enum';
 import { TaskList } from './records/task.list';
+import { useDialogStore } from '../../stores/dialog.store';
 
 // Form validation schema
 const schema = z.object({
@@ -27,33 +28,22 @@ export default function TasksPage({ isAdmin = false }: TasksPageProps) {
 	const { user } = useUserStore();
 	const {
 		filteredTasks,
-		selectedTask,
 		loadingFetch,
 		error,
 		isAdminMode,
 		setSearchTerm,
 		fetchTasks,
 		fetchAdminTasks,
-		createTask,
-		updateTask,
-		deleteTask,
 		setAdminMode,
-		fetchTaskById,
 	} = useTaskStore();
+	const { openDialog } = useDialogStore();
 
 	const {
-		register,
-		handleSubmit,
-		reset,
 		setFocus,
 		formState: { errors },
 	} = useForm<FormData>({ resolver: zodResolver(schema) });
 
-	const [dialogMode, setDialogMode] = useState<
-		'create' | 'edit' | 'delete' | 'view'
-	>('create');
 	const [isOpen, setIsOpen] = useState(false);
-	const [currentId, setCurrentId] = useState<string | null>(null);
 	const [order, setOrder] = useState<string[]>([]);
 
 	// Check user permissions
@@ -88,75 +78,6 @@ export default function TasksPage({ isAdmin = false }: TasksPageProps) {
 	useEffect(() => {
 		setOrder(filteredTasks.map((t) => t.id));
 	}, [filteredTasks]);
-
-	// Set focus on title field when dialog opens
-	useEffect(() => {
-		if (isOpen && (dialogMode === 'edit' || dialogMode === 'create')) {
-			setTimeout(() => setFocus('title'), 100);
-		}
-	}, [isOpen, dialogMode, setFocus]);
-
-	const openDialog = (
-		mode: 'create' | 'edit' | 'delete' | 'view',
-		id?: string
-	) => {
-		setDialogMode(mode);
-		setCurrentId(id || null);
-
-		if (id) {
-			if (mode === 'view') {
-				fetchTaskById(id);
-			} else if (mode === 'edit') {
-				fetchTaskById(id).then(() => {
-					if (selectedTask) {
-						reset({
-							title: selectedTask.title,
-							description: selectedTask.description || '',
-						});
-					}
-				});
-			}
-		} else if (mode === 'create') {
-			reset({ title: '', description: '' });
-		}
-
-		setIsOpen(true);
-	};
-
-	const closeDialog = () => {
-		setIsOpen(false);
-		// Clear selected task when closing dialog
-		if (selectedTask) {
-			useTaskStore.getState().selectTask(null);
-		}
-	};
-
-	const onSubmit = async (data: FormData) => {
-		try {
-			if (dialogMode === 'edit' && currentId) {
-				await updateTask(currentId, data);
-			} else if (dialogMode === 'create') {
-				await createTask({
-					title: data.title,
-					description: data.description,
-				});
-			}
-			closeDialog();
-		} catch (error) {
-			console.error('Error submitting task:', error);
-		}
-	};
-
-	const confirmDelete = async () => {
-		if (currentId) {
-			try {
-				await deleteTask(currentId);
-				closeDialog();
-			} catch (error) {
-				console.error('Error deleting task:', error);
-			}
-		}
-	};
 
 	// Sort tasks according to the established order
 	const ordered = order
