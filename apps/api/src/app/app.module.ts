@@ -11,7 +11,7 @@ import { UserEntity } from './auth/entities/user.entity';
 	imports: [
 		ConfigModule.forRoot({ isGlobal: true }),
 		TypeOrmModule.forRoot({
-			type: 'mysql',
+			type: 'postgres',
 			host: process.env.DB_HOST,
 			port: parseInt(process.env.DB_PORT),
 			username: process.env.DB_USER,
@@ -20,6 +20,9 @@ import { UserEntity } from './auth/entities/user.entity';
 			entities: [RefreshToken, Task, UserEntity],
 			synchronize: true,
 			logging: true,
+			ssl: {
+				rejectUnauthorized: false,
+			},
 		}),
 		AuthModule,
 		TasksModule,

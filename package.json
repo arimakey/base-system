@@ -12,7 +12,8 @@
 		"generate:api": "nx generate @nx/nest:application",
 		"generate:client": "nx generate @nx/react:application",
 		"prettier:check": "prettier --check .",
-		"pretty": "prettier --write ."
+		"pretty": "prettier --write .",
+		"test:coverage:api": "nx test api --coverage"
 	},
 	"private": true,
 	"dependencies": {

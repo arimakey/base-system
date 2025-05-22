@@ -5,7 +5,6 @@ export function TaskChangeStateContent() {
 	const { closeDialog, currentTask } = useDialogStore();
 
 	const onChangeState = () => {
-		// Change state logic here
 		console.log('Changing state for task:', currentTask?.id);
 		closeDialog();
 	};

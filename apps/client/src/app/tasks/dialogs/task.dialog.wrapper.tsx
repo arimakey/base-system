@@ -1,10 +1,12 @@
-// dialog.wrapper.tsx
 import {
 	Dialog,
 	DialogPanel,
 	DialogTitle,
 	Description,
+	Transition,
 } from '@headlessui/react';
+import { Fragment } from 'react';
+
 import { useDialogStore } from '../../../stores/dialog.store';
 import { TaskEditContent } from './task.edit.dialog';
 import { TaskDeleteContent } from './task.delete.dialog';
@@ -67,23 +69,45 @@ export function TaskDialogWrapper() {
 	if (!isOpen || !dialogMode) return null;
 
 	return (
-		<Dialog
-			open={isOpen}
-			as="div"
-			className="relative z-10"
-			onClose={closeDialog}
-		>
-			<div className="fixed inset-0 bg-black/30 flex items-center justify-center p-4">
-				<DialogPanel className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
-					<DialogTitle as="h3" className="text-lg font-medium">
-						{getTitleByMode()}
-					</DialogTitle>
-					<Description className="mt-1 mb-4 text-sm text-gray-600">
-						{getDescriptionByMode()}
-					</Description>
-					{renderContent()}
-				</DialogPanel>
-			</div>
-		</Dialog>
+		<Transition appear show={isOpen} as={Fragment}>
+			<Dialog as="div" className="relative z-10" onClose={closeDialog}>
+				<Transition.Child
+					as={Fragment}
+					enter="ease-out duration-300"
+					enterFrom="opacity-0"
+					enterTo="opacity-100"
+					leave="ease-in duration-200"
+					leaveFrom="opacity-100"
+					leaveTo="opacity-0"
+				>
+					<div className="fixed inset-0 bg-black/30" />
+				</Transition.Child>
+
+				<div className="fixed inset-0 flex items-center justify-center p-4">
+					<Transition.Child
+						as={Fragment}
+						enter="ease-out duration-300"
+						enterFrom="opacity-0 scale-95"
+						enterTo="opacity-100 scale-100"
+						leave="ease-in duration-200"
+						leaveFrom="opacity-100 scale-100"
+						leaveTo="opacity-0 scale-95"
+					>
+						<DialogPanel className="w-full max-w-lg rounded-xl bg-white p-6 shadow-xl">
+							<DialogTitle
+								as="h3"
+								className="text-lg font-medium"
+							>
+								{getTitleByMode()}
+							</DialogTitle>
+							<Description className="mt-1 mb-4 text-sm text-gray-600">
+								{getDescriptionByMode()}
+							</Description>
+							{renderContent()}
+						</DialogPanel>
+					</Transition.Child>
+				</div>
+			</Dialog>
+		</Transition>
 	);
 }

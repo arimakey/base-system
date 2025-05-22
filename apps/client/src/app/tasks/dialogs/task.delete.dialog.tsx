@@ -1,13 +1,19 @@
 import { Button } from '../../components/Button';
 import { useDialogStore } from '../../../stores/dialog.store';
+import { useTaskStore } from '../../../stores/task.store';
 
 export function TaskDeleteContent() {
 	const { closeDialog, currentTask } = useDialogStore();
+	const deleteTask = useTaskStore((state) => state.deleteTask);
+	const isAdminMode = useTaskStore((state) => state.isAdminMode);
 
-	const confirmDelete = () => {
-		// Delete task logic here
-		console.log('Deleting task:', currentTask?.id);
-		closeDialog();
+	const handleDelete = (taskId: string) => {
+		if (isAdminMode) {
+			useTaskStore.getState().deleteTaskAdmin(taskId);
+			closeDialog();
+		} else {
+			deleteTask(taskId);
+		}
 	};
 
 	return (
@@ -16,7 +22,7 @@ export function TaskDeleteContent() {
 				Cancelar
 			</Button>
 			<Button
-				onClick={confirmDelete}
+				onClick={() => handleDelete(currentTask?.id)}
 				variant="primary"
 				className="bg-red-600 hover:bg-red-700 text-white"
 			>

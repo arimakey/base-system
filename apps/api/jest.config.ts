@@ -10,5 +10,13 @@ export default {
 	},
 	moduleFileExtensions: ['ts', 'js', 'html'],
 	coverageDirectory: '../../coverage/apps/api',
-	testMatch: ['tests/**/*.test.ts'],
+	coverageReporters: ['json', 'lcov', 'text', 'clover'],
+	collectCoverageFrom: [
+	  './src/**/*.ts',
+	  '!./src/main.ts',
+	  '!./src/**/*.module.ts',
+	  '!./src/**/*.entity.ts',
+	  '!./src/app/tasks/dto/*.ts',
+	],
+	testMatch: ['**/tests/**/*.spec.ts'],
 };
